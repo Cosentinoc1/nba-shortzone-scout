@@ -1,7 +1,7 @@
 {
   "name": "nba-zone-matchup-scout",
-  "version": "1.9.0",
-  "description": "NBA Scout v1.8: Top 10 More/Less, sortable full-grade board, source-attributed live verification and defensive matchup grades",
+  "version": "2.0.0",
+  "description": "NBA Scout v2.0: evidence-gated Top 10 research and RotoWire projections",
   "private": true,
   "type": "module",
   "engines": {
