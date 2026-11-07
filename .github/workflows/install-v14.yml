@@ -19,7 +19,7 @@ jobs:
 
       - name: Extract and test app
         run: |
-          unzip -oq NBA_Scout_v1.5_Clean_Research_Source.zip
+          cp 'lib/propFeed.mjs (3)' lib/propFeed.mjs
           npm test
 
       - name: Commit source files
