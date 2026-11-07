@@ -1,0 +1,16 @@
+{
+  "name": "nba-zone-matchup-scout",
+  "version": "1.4.0",
+  "description": "NBA matchup and player-prop research desk with exact-line evidence, shot-zone projection and leakage-safe backtesting",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "license": "UNLICENSED"
+}
