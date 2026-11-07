@@ -1,7 +1,7 @@
 {
   "name": "nba-zone-matchup-scout",
-  "version": "1.5.0",
-  "description": "NBA Scout: clean daily player-prop research, conditional independent live lines, CSV import, and explainable evidence-first screening",
+  "version": "1.6.0",
+  "description": "NBA Scout v1.6: ranked More/Less shortlists with evidence gates, fast indexed histories and provider coverage",
   "private": true,
   "type": "module",
   "engines": {

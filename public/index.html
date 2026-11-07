@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout · Research & Picks</title><link rel="stylesheet" href="/clean.css?v=1.5"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout · Research & Picks</title><link rel="stylesheet" href="/clean.css?v=1.6"></head>
 <body>
 <div class="app">
  <header class="topbar">
@@ -8,18 +8,24 @@
  </header>
  <main>
   <section class="hero">
-   <div class="eyebrow"><span class="line-dot"></span> SMART NBA RESEARCH · V1.5</div>
+   <div class="eyebrow"><span class="line-dot"></span> SMART NBA RESEARCH · V1.6</div>
    <div class="hero-title"><div><h1>Better research.<br><span>Clearer decisions.</span></h1><p>Real prop lines, on-court opportunity and defensive matchups in one clean place. No guesswork disguised as certainty.</p></div><div class="date-wrap"><label for="dateInput">GAME DAY</label><input type="date" id="dateInput" min="2026-10-20" max="2027-04-11"></div></div>
   </section>
-  <div class="segmented" role="tablist" aria-label="Research pages"><button id="tabPicks" role="tab" aria-selected="true" class="active" data-tab="picks">Top Picks <span id="pickCount" class="tab-count">0</span></button><button id="tabExplore" role="tab" aria-selected="false" data-tab="explore">Player Research</button><a href="/classic">Full Analytics ↗</a></div>
+  <div class="segmented" role="tablist" aria-label="Research pages"><button id="tabPicks" role="tab" aria-selected="true" class="active" data-tab="picks">Top Picks <span id="pickCount" class="tab-count">0</span></button><button id="tabLines" role="tab" aria-selected="false" data-tab="lines">All Lines</button><button id="tabExplore" role="tab" aria-selected="false" data-tab="explore">Player Research</button><a href="/classic">Full Analytics ↗</a></div>
   <section id="picksPage" class="page active">
    <div class="status-card" id="feedCard"><div class="feed-left"><span class="feed-icon">◉</span><div><strong id="feedTitle">Checking your prop board…</strong><small id="feedDetail">Looking for a connected NBA standard-line feed</small></div></div><div class="status-actions"><button class="button secondary" id="refreshBtn" type="button">↻ Refresh</button><label class="button primary upload" for="csvInput">↑ Import CSV</label><input id="csvInput" class="sr-only" type="file" accept=".csv,text/csv,.txt"></div></div>
    <div id="setupNote" class="setup-note" hidden><strong>Want your PrizePicks lines automatically?</strong><p>Connect a permitted independent data API or publish your existing Google Sheet as CSV. Until then, use <b>Import CSV</b> from your daily prop board. Live lines require the source to be configured; this site does not scrape PrizePicks.</p><details><summary>How to connect automatic lines</summary><p>In Render → nba-shotzone-scout → Environment, set <code>PRIZEPICKS_API_KEY</code> to a key from an independent licensed feed such as <a href="https://prizepicksapi.com/docs" target="_blank" rel="noopener noreferrer">prizepicksapi.com</a>. Or, after choosing to publish the board, set <code>PROPS_CSV_URL</code> to its public Google Sheets CSV URL. Never paste API keys into this page.</p></details></div>
-   <div class="section-heading"><div><div class="overline">TODAY'S SHORTLIST</div><h2>Top 6 research picks <span id="listTag" class="sub-tag">Preliminary</span></h2><p>Ranked against available data. Every pick still needs injury, lineup, minutes and price checks.</p></div><div class="sort-wrap"><select id="sideFilter" aria-label="Filter direction"><option value="ALL">More + Less</option><option value="MORE">More only</option><option value="LESS">Less only</option></select></div></div>
+   <div class="section-heading"><div><div class="overline">TODAY'S SHORTLIST</div><h2>NBA research shortlist <span id="listTag" class="sub-tag">Preliminary</span></h2><p>Separate MORE, LESS, and unfavorable matchups. Screening is not a betting probability.</p></div><div class="sort-wrap"><select id="sideFilter" aria-label="Filter direction"><option value="ALL">Top 6 overall</option><option value="MORE">Top 6 MORE</option><option value="LESS">Top 6 LESS</option><option value="WORST">Bottom 6 alignments</option></select></div></div>
    <div id="slateChips" class="slate-chips" role="group" aria-label="Filter today's games"></div>
    <div id="pickSummary" class="summary-line" aria-live="polite">Loading NBA games and player history…</div>
    <div id="picksGrid" class="picks-grid" aria-live="polite"><div class="empty-state"><div class="empty-icon">⌁</div><h3>Loading the research board</h3><p>We're checking the latest available game and prop data.</p></div></div>
    <p class="footnote">Research scores are <b>not win probabilities</b>. A high score does not mean a profitable pick. Payout, line movement and independent minutes/injury projections remain mandatory final checks.</p>
+  </section>
+  <section id="linesPage" class="page" hidden>
+   <div class="section-heading"><div><div class="overline">SOURCE COVERAGE</div><h2>All observed NBA lines</h2><p>Shows offers returned by the independent provider, including discounted tiers when supplied. This is not proof of a complete PrizePicks board.</p></div></div>
+   <div id="lineCoverage" class="summary-line">Checking available line coverage…</div>
+   <div class="research-box"><div class="input-grid"><div><label for="lineSearch">SEARCH PLAYER OR STAT</label><input id="lineSearch" placeholder="e.g. Jokic, assists"></div><div><label for="lineTier">LINE TIER</label><select id="lineTier"><option value="ALL">All tiers</option><option value="standard">Standard only</option><option value="goblin">Goblin</option><option value="demon">Demon</option></select></div></div></div>
+   <div id="linesGrid" class="picks-grid"></div><p class="footnote">Offers are read-only, not verified available sides; always confirm current line and payout in PrizePicks before use.</p>
   </section>
   <section id="explorePage" class="page" hidden>
    <div class="section-heading"><div><div class="overline">PLAYER RESEARCH</div><h2>Explore any matchup</h2><p>Choose a player, enter the current line and see what supports or contradicts it.</p></div></div>
@@ -34,5 +40,5 @@
  </main>
  <footer><span>© NBA Scout · For research, not guaranteed outcomes</span><a href="/classic">Advanced dashboard ↗</a></footer>
 </div>
-<script type="module" src="/clean.js?v=1.5"></script>
+<script type="module" src="/clean.js?v=1.6"></script>
 </body></html>

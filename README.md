@@ -1,3 +1,14 @@
+## v1.6 — Faster rankings and provider coverage (2026-11-07)
+
+- Fixes slate-ranking timeout risk with per-team game indexes and cached date parsing.
+- Separate Top 6 MORE, Top 6 LESS, and Bottom 6 unfavorable shot-location alignments (not automatic LESS picks).
+- New evidence fields: baseline, smoothed hit history (pushes distinct), opportunity trend, matchup alignment, consistency and confidence.
+- Hard vetoes for stale/unknown line timestamps, low minutes and inadequate game samples. External role, injury, tracking and payout are never inferred.
+- Adds /api/lines and an All Lines browser for all offers *observed by the licensed provider*, including goblin/demon tags when present. Providers cannot guarantee complete PrizePicks coverage.
+- Reads up to 10,000 rows of a source response and surfaces pagination/truncation indicators and provider-versus-eligible counts. Automatic extra page requests are NOT made because the free tier is credit-limited.
+
+**This is a research and screening product, not a system for guaranteed bets or calibrated betting probabilities.**
+
 # NBA Shot-Zone Scout — Hosted Web App
 
 A Node.js (20+) web dashboard combining six-zone defensive shot charts, current 30-team roster selections, player shot-location profiles, explanatory grades, and Top 6 / Worst 6 matchup screening.
