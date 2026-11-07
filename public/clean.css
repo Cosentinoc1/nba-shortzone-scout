@@ -34,3 +34,11 @@
 .grade-load-more{margin:18px auto 4px;display:block}.grade-load-more[hidden]{display:none}
 @media(max-width:900px){.grade-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.grade-item{grid-template-columns:1.6fr 1fr repeat(3,.7fr)}.grade-item .grade-number:nth-last-child(-n+2){display:none}}
 @media(max-width:640px){.grade-filters{padding:12px;gap:9px}.grade-filters label:first-child{grid-column:1/-1}.grade-item{grid-template-columns:minmax(0,1fr) 115px 50px;gap:8px;padding:12px}.grade-item .grade-number:nth-child(n+4){display:none}.grade-item .grade-number:nth-child(3){display:flex}.grade-name b{font-size:13px}.grade-direction small{font-size:9px}.grade-number b{font-size:19px}.source-mini>div{grid-template-columns:80px minmax(0,1fr)}.matchup-grade{padding:7px 9px}.grade-status{font-size:10px}}
+
+/* RotoWire daily import · v1.9 */
+.roto-upload{display:flex;align-items:center;gap:14px;background:linear-gradient(115deg,#111d2f,#152337);border:1px solid #334461;border-radius:17px;padding:18px 20px;margin:14px 0 7px;flex-wrap:wrap}
+.roto-icon{flex:0 0 auto;width:45px;height:45px;border:1px solid #b4f464;border-radius:12px;display:grid;place-items:center;color:#b4f464;font-size:13px;font-weight:900;letter-spacing:.05em}
+.roto-copy{flex:1 1 250px;display:grid;gap:5px}.roto-copy strong{color:#f3f6fc;font-size:16px}.roto-copy small{color:#a5b1c4;line-height:1.5;font-size:12px}
+.roto-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.roto-actions .button{font-size:12px;cursor:pointer}
+.roto-status{font-size:12px;color:#a4b2c6;line-height:1.5;padding:3px 5px 10px;margin:0}.roto-status[data-kind="ok"]{color:#b2f46c}.roto-status[data-kind="error"]{color:#ffa4a6}.roto-status[data-kind="warning"]{color:#ffc870}
+@media(max-width:650px){.roto-upload{padding:15px;gap:12px}.roto-copy{flex-basis:75%}.roto-actions{width:100%}.roto-actions .button{flex-grow:1}}

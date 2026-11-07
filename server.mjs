@@ -13,6 +13,7 @@ import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
 import {buildPropInsight} from './lib/insight.mjs';
 import {externalContextForDay} from './lib/context.mjs';
 import {applyVerification} from './lib/decision.mjs';
+import {applyRotoProjections, normalizeRotoProjections} from './lib/rotowire.mjs';
 const ROOT=path.dirname(fileURLToPath(import.meta.url));
 const snapshotDefense=JSON.parse(await readFile(path.join(ROOT,'data/defense.json'),'utf8'));
 const snapshotPlayers=JSON.parse(await readFile(path.join(ROOT,'data/players.json'),'utf8'));
@@ -132,7 +133,7 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
    await saveCache();
  }catch(e){error=e.message;refreshStage='Retained validated snapshot';console.warn('Refresh:',e.message)}finally{busy=false}
 }
-function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.8.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
+function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.9.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
 function json(res,obj,statusCode=200){res.writeHead(statusCode,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj))}
 function requireTeam(code){const t=normalizeTeam(code);return rosters[t]?t:null}
 async function handler(req,res){
@@ -148,9 +149,7 @@ async function handler(req,res){
    const feed=await loadPropsFeed();
    return json(res,{...feedStatusOnly(feed),offers:(feed.offers||[]).slice(0,10000)});
   }
-   if(pathname==='/api/lines'&&req.method==='GET'){
-    const feed=await loadPropsFeed();return json(res,{...feedStatusOnly(feed),offers:(feed.offers||[]).slice(0,10000)});
-   }
+   
    if(pathname==='/api/insight'&&req.method==='GET'){
     const day=u.searchParams.get('date')||localDate();
     if(!validSlateDay(day))return json(res,{error:'Invalid NBA regular-season date'},400);
@@ -180,7 +179,29 @@ async function handler(req,res){
    if(!validSlateDay(day))return json(res,{error:'Invalid NBA regular season date'},400);
    const feed=await loadPropsFeed();
    let slate=[];try{slate=await getSchedule(false,day)}catch(e){return json(res,{feed:feedStatusOnly(feed),error:'NBA schedule unavailable',details:e.message},503)}
-   const result=rankBoard({rows:feed.rows,schedule:slate,day,gameCache,rosters,players,defense});
+   const preliminary=rankBoard({rows:feed.rows,schedule:slate,day,gameCache,rosters,players,defense});
+   let ctx={injuries:[],games:[],injuriesFetched:false,lineupsFetched:false};
+   try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.sourceError=String(e.message||e)}
+   const result=applyVerification({board:{...preliminary,games:slate},context:ctx,gameCache,rosters,defense,day,limit:10});
+   return json(res,{...result,feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
+  }
+  if(pathname==='/api/picks/rotowire'&&req.method==='POST'){
+   // Files are parsed client-side. Only compact user-entered projections are sent.
+   // Never write subscription data to disk, logs or global process state.
+   let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>210000)return json(res,{error:'RotoWire projection request exceeds 210 KB'},413)}
+   let payload;try{payload=JSON.parse(raw)}catch{return json(res,{error:'Invalid projection JSON'},400)}
+   const day=payload.date||localDate();if(!validSlateDay(day))return json(res,{error:'Invalid 2026–27 game date'},400);
+   if(!Array.isArray(payload.rows)||payload.rows.length>500)return json(res,{error:'Upload at most 500 RotoWire rows'},400);
+   let projected;try{projected=normalizeRotoProjections(payload.rows)}catch(e){return json(res,{error:e.message},400)}
+   if(!projected.length)return json(res,{error:'No valid player projections. Check NAME, Team and MIN headers.'},400);
+   const uploadedAt=typeof payload.uploadedAt==='string'&&Number.isFinite(Date.parse(payload.uploadedAt))?payload.uploadedAt:new Date().toISOString();
+   const feed=await loadPropsFeed();
+   let slate=[];try{slate=await getSchedule(false,day)}catch(e){return json(res,{error:'NBA schedule unavailable',details:e.message},503)}
+   const base=rankBoard({rows:feed.rows,schedule:slate,day,gameCache,rosters,players,defense});
+   let ctx={injuries:[],games:[],injuriesFetched:false,lineupsFetched:false};
+   try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.sourceError=String(e.message||e)}
+   const verified=applyVerification({board:{...base,games:slate},context:ctx,gameCache,rosters,defense,day,limit:10});
+   const result=applyRotoProjections(verified,projected,day,{limit:10,uploadedAt});
    return json(res,{...result,feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
   }
   if(pathname==='/api/picks/import'&&req.method==='POST'){
@@ -191,7 +212,10 @@ async function handler(req,res){
    const supplied=typeof input.csv==='string'?parseCsv(input.csv):(Array.isArray(input.rows)?input.rows:[]);
    if(supplied.length>3000)return json(res,{error:'Maximum 3,000 prop rows per upload'},413);
    let slate=[];try{slate=await getSchedule(false,day)}catch(e){return json(res,{error:'NBA schedule unavailable',details:e.message},503)}
-   const result=rankBoard({rows:supplied,schedule:slate,day,gameCache,rosters,players,defense});
+   const preliminary=rankBoard({rows:supplied,schedule:slate,day,gameCache,rosters,players,defense});
+   let ctx={injuries:[],games:[],injuriesFetched:false,lineupsFetched:false};
+   try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.sourceError=String(e.message||e)}
+   const result=applyVerification({board:{...preliminary,games:slate},context:ctx,gameCache,rosters,defense,day,limit:10});
    return json(res,{...result,feed:{configured:false,source:'Uploaded file · local browser session',count:result.boardCount,status:'uploaded'},games:slate,historyGames:Object.keys(gameCache).length});
   }
   if(pathname==='/api/research'){
@@ -264,7 +288,7 @@ async function handler(req,res){
    fullRefresh().catch(e=>console.warn(e));return json(res,{accepted:true,status:status()},202);
   }
   if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
-  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/insight-ui.js':'insight-ui.js','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css'};
+  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/rotowire-upload.js':'rotowire-upload.js','/insight-ui.js':'insight-ui.js','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css'};
   const name=files[pathname];if(!name)return json(res,{error:'Not found'},404);
   const dest=path.join(ROOT,'public',name);if(!existsSync(dest))return json(res,{error:'Not found'},404);
   const type=name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8';

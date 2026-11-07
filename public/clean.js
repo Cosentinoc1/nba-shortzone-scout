@@ -23,8 +23,8 @@ function renderPicks(){
  const data=state.data;if(!data)return;
  const selected=effectiveCandidates();$('pickCount').textContent=selected.length;
  const stale=data.freshness?.status==='stale'||data.freshness?.status==='unverified';
- const source=data.feed?.source||'Imported CSV',count=data.boardCount||0;
- $('pickSummary').textContent=`${count} standard lines · ${data.matched||0} scored directions · ${data.qualified||0} eligible · ${source}${stale?' · STALE': ''}`;
+ const source=data.feed?.source||'Imported CSV',count=data.boardCount||0;const rw=data.rotowireStatus;
+ $('pickSummary').textContent=`${count} standard lines · ${data.matched||0} scored directions · ${data.qualified||0} eligible · ${source}${rw?' · RotoWire '+rw.playerRows+' player projections':''}${stale?' · STALE': ''}`;
  $('listTag').textContent=stale?'STALE LINES':state.side==='WORST'?'Tough defensive matchups · not automatic unders':'Source-aware research · NOT final bets';
  if(!selected.length){$('picksGrid').innerHTML=blank('No eligible Top 10 candidates','Check the line source, injuries and your date filters. The app does not force a pick when evidence is missing.');return;}
  $('picksGrid').innerHTML=selected.map((c,i)=>{
@@ -37,13 +37,13 @@ function renderPicks(){
   <div class="pick-top"><span class="rank">#${i+1} · ${mismatch?'TOUGH MATCHUP':'RFPP RESEARCH CANDIDATE'}</span><span class="grade">${esc(c.score)}<small>EVIDENCE SCORE / 100</small></span></div>
   <h3 class="player-name">${esc(c.player)}</h3><div class="matchup">${esc(c.team)} vs ${esc(c.opponent)} · ${esc(STAT[c.stat]||c.stat)}</div>
   <div class="pick-main"><div><span class="line-amount">${esc(c.line)}<span>${esc(STAT[c.stat]||c.stat)} · standard line</span></span></div>
-  <div class="pick-side"><span class="side-pill ${esc(c.side)}">${esc(c.side)}</span><div class="stat-name">Baseline ${fmt(c.projected)}</div></div></div>
-  <div class="microstats"><div><strong>${l10}</strong><small>L10 TRUE WINS</small></div><div><strong>${fmt(c.margin)}</strong><small>BASELINE MARGIN</small></div><div><strong>${fmt(c.minutes)}</strong><small>ACTUAL L5 MIN/G</small></div></div>
+  <div class="pick-side"><span class="side-pill ${esc(c.side)}">${esc(c.side)}</span><div class="stat-name">History ${fmt(c.projected)}${c.rotowire?.matched?' · RW '+fmt(c.rotowire.projectedStat):''}</div></div></div>
+  <div class="microstats"><div><strong>${l10}</strong><small>L10 TRUE WINS</small></div><div><strong>${fmt(c.margin)}</strong><small>BASELINE MARGIN</small></div><div><strong>${fmt(c.rotowire?.matched?c.rotowire.projectedMinutes:c.minutes)}</strong><small>${c.rotowire?.matched?'RW PROJECTED MIN':'ACTUAL L5 MIN/G'}</small></div></div>
   <div class="grade-band"><span class="matchup-grade">VS DEFENSE <b>${match.available?esc(directMatch.letter||'—'):'—'}</b><small>${match.available?esc(c.side)+' · '+esc(match.rank)+'/'+esc(match.totalTeams)+' · G/F/C proxy':'NOT VERIFIED'}</small></span><span class="grade-status">${esc(c.lean||'NO LEAN')}</span></div>
-  <div class="tag-row"><span class="tag">Opp defense ${esc(ev.defense??'—')}/100</span><span class="tag">Role: ${esc(c.lineupStatus||'unverified')}</span><span class="tag warning">${pending.length} pending/veto checks</span></div>
+  <div class="tag-row"><span class="tag">Opp defense ${esc(ev.defense??'—')}/100</span><span class="tag">Role: ${esc(c.lineupStatus||'unverified')}</span>${c.rotowire?.matched?'<span class="tag">RW margin '+esc(c.rotowire.modelGap)+' · '+esc(c.rotowire.minutesChangePct)+'% mins change</span>':''}<span class="tag warning">${pending.length} pending/veto checks</span></div>
   <button class="expand" type="button" aria-expanded="false">Source evidence & remaining checks ＋</button>
   <div class="evidence" hidden><h4>Measured reasons for ranking</h4><ul>${(c.reasons||[]).slice(0,8).map(x=>`<li>${esc(x)}</li>`).join('')||'<li>No measured support available.</li>'}</ul>
-  <h4>Evidence grades · not probabilities</h4><div class="tag-row"><span class="tag">Baseline ${esc(ev.baseline??'—')}</span><span class="tag">Recent ${esc(ev.hitHistory??'—')}</span><span class="tag">Opportunity ${esc(ev.opportunity??'—')}</span><span class="tag">Defense ${esc(ev.defense??'—')}</span><span class="tag">Context ${esc(ev.context??'—')}</span><span class="tag">Confidence ${esc(ev.confidence??'—')}</span></div>
+  <h4>Evidence grades · not probabilities</h4><div class="tag-row"><span class="tag">Baseline ${esc(ev.baseline??'—')}</span><span class="tag">Recent ${esc(ev.hitHistory??'—')}</span><span class="tag">Opportunity ${esc(ev.opportunity??'—')}</span><span class="tag">Defense ${esc(ev.defense??'—')}</span><span class="tag">Context ${esc(ev.context??'—')}</span>${c.rotowire?.matched?'<span class="tag">RotoWire '+esc(ev.projection??'—')+'</span>':''}<span class="tag">Confidence ${esc(ev.confidence??'—')}</span></div>
   <h4>Automatically sourced checks</h4><div class="source-mini">${primary.map(x=>`<div><span class="source-state ${checkStyle(x.state)}">${esc(checkBadgeText(x.state))}</span><b>${esc(x.name)}</b><small>${esc(x.detail)}</small></div>`).join('')||'<p>Public sources not currently accessible.</p>'}</div>
   <h4>Still pending · must be checked</h4><ul>${pending.slice(0,7).map(x=>`<li>${esc(x.name)} · ${esc(x.detail)}</li>`).join('')||'<li>No unresolved data checks in this view; complete final veto and market price independently.</li>'}</ul>
   <p class="review-note">Source checks are generated from real observations. Expected starters are NOT confirmed; historical minutes are NOT independent projections. No calibrated P(win) or price edge.</p></div>
@@ -61,14 +61,14 @@ function renderGradeBoard(){
  if(direction==='BEST'){
   const best=new Map();for(const x of pool){const k=[x.player,x.stat,x.line,x.team].join('|');const old=best.get(k);if(!old||x.score>old.score)best.set(k,x)}pool=[...best.values()];
  }
- const accessor=x=>({score:x.score,defense:x.evidence?.defense??-1,baseline:x.evidence?.baseline??-1,opportunity:x.evidence?.opportunity??-1,confidence:x.evidence?.confidence??-1,context:x.evidence?.context??-1,last10:x.hit10?.sample?x.hit10.winPct:-1,margin:x.margin??-999})[sort]??-1;
+ const accessor=x=>({score:x.score,defense:x.evidence?.defense??-1,baseline:x.evidence?.baseline??-1,opportunity:x.evidence?.opportunity??-1,confidence:x.evidence?.confidence??-1,context:x.evidence?.context??-1,projection:x.evidence?.projection??-1,minutes:x.rotowire?.projectedMinutes??-1,last10:x.hit10?.sample?x.hit10.winPct:-1,margin:x.margin??-999})[sort]??-1;
  pool.sort((a,b)=>accessor(b)-accessor(a)||Number(a.state==='PASS')-Number(b.state==='PASS')||String(a.player).localeCompare(String(b.player)));
  state.gradeVisible=pool;
  const shown=pool.slice(0,state.gradeLimit||80);
  $('gradeSummary').textContent=`${pool.length} displayed research directions · sorted by ${$('gradeSort').selectedOptions[0]?.textContent||'score'} · G/F/C defense scores are proxies · scores are not probabilities`;
  list.innerHTML=shown.length?shown.map((x,i)=>{
   const def=x.defenseGrade||{},direct=x.matchupGrade||{},pos=x.lineupRole||'',l10=x.hit10?.sample?`${x.hit10.win}/${x.hit10.sample}`:'—';
-  return `<button type="button" class="grade-item" data-grade-index="${i}" aria-label="Open ${esc(x.player)} ${esc(x.stat)} ${esc(x.side)} research"><span class="grade-name"><b>${esc(x.player)}</b><small>${esc(x.team)} vs ${esc(x.opponent)} · ${esc(STAT[x.stat]||x.stat)} ${esc(x.line)}</small></span><span class="grade-direction"><span class="side-pill ${esc(x.side)}">${esc(x.side)}</span><small>${esc(x.lean||'research')}</small></span><span class="grade-number"><b>${esc(x.score)}</b><small>OVERALL</small></span><span class="grade-number"><b>${def.available?esc(direct.letter||'—'):'—'}</b><small>VS DEF</small></span><span class="grade-number"><b>${esc(x.evidence?.opportunity??'—')}</b><small>OPP.</small></span><span class="grade-number"><b>${esc(l10)}</b><small>L10 WINS</small></span><span class="grade-number"><b>${esc(x.pendingCount??'—')}</b><small>PENDING</small></span></button>`;
+  return `<button type="button" class="grade-item" data-grade-index="${i}" aria-label="Open ${esc(x.player)} ${esc(x.stat)} ${esc(x.side)} research"><span class="grade-name"><b>${esc(x.player)}</b><small>${esc(x.team)} vs ${esc(x.opponent)} · ${esc(STAT[x.stat]||x.stat)} ${esc(x.line)}${x.rotowire?.matched?' · RW '+fmt(x.rotowire.projectedStat)+' · '+fmt(x.rotowire.projectedMinutes)+' min':''}</small></span><span class="grade-direction"><span class="side-pill ${esc(x.side)}">${esc(x.side)}</span><small>${esc(x.lean||'research')}</small></span><span class="grade-number"><b>${esc(x.score)}</b><small>OVERALL</small></span><span class="grade-number"><b>${def.available?esc(direct.letter||'—'):'—'}</b><small>VS DEF</small></span><span class="grade-number"><b>${esc(x.evidence?.opportunity??'—')}</b><small>OPP.</small></span><span class="grade-number"><b>${esc(l10)}</b><small>L10 WINS</small></span><span class="grade-number"><b>${esc(x.pendingCount??'—')}</b><small>PENDING</small></span></button>`;
  }).join(''):blank('No matching props','Adjust the direction, stat, keyword or include-PASS filter.');
  const more=$('gradeMore');more.hidden=pool.length<=shown.length;more.textContent=`Show more (${Math.max(0,pool.length-shown.length)} remaining)`;
  list.querySelectorAll('.grade-item').forEach(row=>row.onclick=()=>window.dispatchEvent(new CustomEvent('scout-open-insight',{detail:shown[Number(row.dataset.gradeIndex)]})));
@@ -82,7 +82,7 @@ function showFeed(d){const feed=d.feed||{},fr=d.freshness||{},n=d.boardCount||0;
 }
 async function loadPicks(){if(state.feedMode==='import'&&state.lastFile)return uploadCsv(state.lastFile,true);
  $('refreshBtn').disabled=true;$('refreshBtn').textContent='Refreshing…';$('picksGrid').innerHTML=blank('Loading today’s board','Reading ESPN game history and the configured prop line feed.');
- try{const date=$('dateInput').value;const data=await request(`/api/picks?date=${encodeURIComponent(date)}`);state.data=data;setGames(data);showFeed(data);renderPicks();renderGradeBoard();$('netStatus').classList.add('ready');$('netStatus').innerHTML='<i></i> Connected';}
+ try{const date=$('dateInput').value;const data=await request(`/api/picks?date=${encodeURIComponent(date)}`);state.data=data;setGames(data);showFeed(data);renderPicks();renderGradeBoard();window.dispatchEvent(new CustomEvent('scout-board-loaded',{detail:{date}}));$('netStatus').classList.add('ready');$('netStatus').innerHTML='<i></i> Connected';}
  catch(e){notify('Could not load picks',e.message,'error');$('picksGrid').innerHTML=blank('Research board unavailable',e.message)}finally{$('refreshBtn').disabled=false;$('refreshBtn').textContent='↻ Refresh'}
 }
 async function uploadCsv(contents,silent=false){
@@ -123,6 +123,17 @@ async function analyzePlayer(){const team=$('teamSelect').value,id=$('playerSele
  <h4>Veto checklist</h4><ul>${(res.notes||[]).map(n=>`<li>${esc(n)}</li>`).join('')}</ul></article>`;
  }catch(e){$('researchResult').innerHTML=blank('Could not complete analysis',e.message)}finally{$('researchBtn').disabled=false}
 }
+window.addEventListener('scout-rotowire-data',async event=>{
+ const pack=event.detail;if(!pack||pack.date!==$('dateInput').value)return;
+ const note=$('rtoStatus');if(note)note.textContent=`Correlating ${pack.rows.length} RotoWire projections with current standard lines…`;
+ try{
+  const data=await request('/api/picks/rotowire',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pack)});
+  if(pack.date!==$('dateInput').value)return;
+  state.data=data;setGames(data);showFeed(data);renderPicks();renderGradeBoard();
+  if(note){note.dataset.kind='ok';note.textContent=`${data.rotowireStatus?.playerRows||pack.rows.length} RotoWire players · ${Math.floor((data.rotowireStatus?.directionsMatched||0)/2)} matched props · Top 10 now requires forecast/history agreement`;}
+ }catch(e){if(note){note.dataset.kind='error';note.textContent=`Projection analysis error: ${e.message}`}}
+});
+window.addEventListener('scout-rotowire-clear',()=>loadPicks());
 async function boot(){
  $('tabPicks').onclick=()=>setTab('picks');$('tabGrades').onclick=()=>setTab('grades');$('tabExplore').onclick=()=>setTab('explore');$('tabLines').onclick=()=>setTab('lines');$('lineSearch').oninput=renderLines;for(const key of ['gradeSearch','gradeDirection','gradeStat','gradeSort','gradePass']){$(key).addEventListener(key==='gradeSearch'?'input':'change',()=>{state.gradeLimit=80;renderGradeBoard()})}$('gradeMore').onclick=()=>{state.gradeLimit+=80;renderGradeBoard()};$('lineTier').onchange=renderLines;$('refreshBtn').onclick=()=>{state.feedMode='remote';state.lastFile=null;loadPicks()};$('sideFilter').onchange=e=>{state.side=e.target.value;renderPicks()};$('dateInput').onchange=()=>{state.game='ALL';state.lines=null;loadPicks()};$('teamSelect').onchange=onTeam;$('researchBtn').onclick=analyzePlayer;
  $('csvInput').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>350000){notify('CSV too large','Export only the standard NBA props, maximum 350 KB','error');return}const t=await f.text();await uploadCsv(t);e.target.value=''};
