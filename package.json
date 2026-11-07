@@ -1,6 +1,6 @@
 {
   "name": "nba-zone-matchup-scout",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "NBA Scout v2.0: evidence-gated Top 10 research and RotoWire projections",
   "private": true,
   "type": "module",

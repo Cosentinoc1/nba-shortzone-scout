@@ -42,3 +42,12 @@
 .roto-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.roto-actions .button{font-size:12px;cursor:pointer}
 .roto-status{font-size:12px;color:#a4b2c6;line-height:1.5;padding:3px 5px 10px;margin:0}.roto-status[data-kind="ok"]{color:#b2f46c}.roto-status[data-kind="error"]{color:#ffa4a6}.roto-status[data-kind="warning"]{color:#ffc870}
 @media(max-width:650px){.roto-upload{padding:15px;gap:12px}.roto-copy{flex-basis:75%}.roto-actions{width:100%}.roto-actions .button{flex-grow:1}}
+
+/* RFPP 2.1 directional shortlist */
+
+.grade-item.edge-priority {border-color:#93cf59; box-shadow:inset 3px 0 #93cf59;}
+.grade-item.edge-promising {border-color:#648f56; box-shadow:inset 3px 0 #82be56;}
+.grade-item.edge-conflict, .grade-item.edge-opposed {opacity:.76;}
+.grade-item.edge-neutral {border-color:var(--stroke);}
+.grade-item.edge-priority .grade-number:first-of-type b,
+.grade-item.edge-promising .grade-number:first-of-type b {color:#b9ed70;}
