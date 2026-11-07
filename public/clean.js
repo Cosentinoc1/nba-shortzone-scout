@@ -1,55 +1,79 @@
 /* NBA Scout v1.5: minimal, source-aware, mobile-first research desk. */
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const state={data:null,game:'ALL',side:'ALL',rosters:null,feedMode:'remote',lastFile:null,lines:null};
+const state={data:null,game:'ALL',side:'ALL',rosters:null,feedMode:'remote',lastFile:null,lines:null,gradeVisible:[],gradeLimit:80};
 const blank=(title,body)=>`<div class="empty-state"><div class="empty-icon">⌁</div><h3>${esc(title)}</h3><p>${esc(body)}</p></div>`;
 const human=x=>x==null?'—':String(x);
 const fmt=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
 const STAT={PTS:'Points',REB:'Rebounds',AST:'Assists','3PM':'Threes',PRA:'PTS + REB + AST',RA:'REB + AST',PA:'PTS + AST',PR:'PTS + REB',FGA:'FGA','3PA':'3PA',FTM:'FT made','2PM':'2PT made'};
 const request=async(path,init={})=>{const res=await fetch(path,init);const json=await res.json();if(!res.ok)throw Error(json.error||`Server returned ${res.status}`);return json};
 function notify(status,detail,kind='neutral'){$('feedTitle').textContent=status;$('feedDetail').textContent=detail;$('feedCard').dataset.state=kind}
-function setTab(name){for(const tab of ['picks','lines','explore']){const on=tab===name;$(tab+'Page').hidden=!on;$(tab+'Page').classList.toggle('active',on);$('tab'+tab[0].toUpperCase()+tab.slice(1)).classList.toggle('active',on);$('tab'+tab[0].toUpperCase()+tab.slice(1)).setAttribute('aria-selected',String(on))}if(name==='explore')loadRoster();if(name==='lines')loadLines()}
-function setGames(data){const el=$('slateChips');const games=data?.games||[];let out=`<button class="chip ${state.game==='ALL'?'active':''}" type="button" data-game="ALL">All games</button>`;for(const g of games){if(!g.away||!g.home)continue;const n=`${g.away} @ ${g.home}`;out+=`<button class="chip ${state.game===g.id?'active':''}" type="button" data-game="${esc(g.id)}">${esc(n)}${g.completed?' · Final':''}</button>`}el.innerHTML=out;el.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{state.game=btn.dataset.game;setGames(state.data);renderPicks()}))}
+function setTab(name){for(const tab of ['picks','grades','lines','explore']){const on=tab===name;$(tab+'Page').hidden=!on;$(tab+'Page').classList.toggle('active',on);$('tab'+tab[0].toUpperCase()+tab.slice(1)).classList.toggle('active',on);$('tab'+tab[0].toUpperCase()+tab.slice(1)).setAttribute('aria-selected',String(on))}if(name==='explore')loadRoster();if(name==='lines')loadLines();if(name==='grades')renderGradeBoard()}
+function setGames(data){const el=$('slateChips');const games=data?.games||[];let out=`<button class="chip ${state.game==='ALL'?'active':''}" type="button" data-game="ALL">All games</button>`;for(const g of games){if(!g.away||!g.home)continue;const n=`${g.away} @ ${g.home}`;out+=`<button class="chip ${state.game===g.id?'active':''}" type="button" data-game="${esc(g.id)}">${esc(n)}${g.completed?' · Final':''}</button>`}el.innerHTML=out;el.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{state.game=btn.dataset.game;setGames(state.data);renderPicks();renderGradeBoard()}))}
 function effectiveCandidates(){
  const d=state.data||{},kind=state.side;
- const arr=kind==='MORE'?d.topMore:kind==='LESS'?d.topLess:kind==='WORST'?d.unfavorable:d.all;
- const candidates=Array.isArray(arr)?arr:[];
- const knownGames=new Map((d.games||[]).map(g=>[g.id,[g.away,g.home]]));
- const matching=state.game==='ALL'?null:knownGames.get(state.game);
- let filtered=candidates.filter(c=>c.state!=='PASS'&&(kind==='WORST'||c.margin>0)&&(!matching||matching.includes(c.team)));
- let used=new Set(),res=[];for(const c of filtered){const k=c.player.toLowerCase();if(used.has(k))continue;used.add(k);res.push(c);if(res.length>=6)break}return res;
+ const arr=kind==='MORE'?d.topMore:kind==='LESS'?d.topLess:kind==='WORST'?(d.bottom10||d.unfavorable):d.candidates;
+ const list=Array.isArray(arr)?arr:[];
+ const games=new Map((d.games||[]).map(g=>[g.id,[g.away,g.home]])),target=state.game==='ALL'?null:games.get(state.game);
+ return list.filter(c=>c.state!=='PASS'&&(!target||target.includes(c.team))).slice(0,10);
 }
-
+const checkStyle=x=>x==='veto'?'bad':x==='observed'||x==='confirmed'?'good':x==='expected'||x==='proxy'||x==='partial'||x==='model'||x==='reported'?'soft':'pending';
+const checkBadgeText=x=>({veto:'VETO',observed:'SOURCED',confirmed:'CONFIRMED',expected:'EXPECTED',proxy:'PROXY',partial:'PARTIAL',model:'HISTORY',reported:'REPORTED',pending:'PENDING',unverified:'UNVERIFIED'})[x]||String(x).toUpperCase();
 function renderPicks(){
  const data=state.data;if(!data)return;
- const filter=effectiveCandidates();$('pickCount').textContent=filter.length;
- const stale=data.freshness?.status==='stale'||data.freshness?.status==='unverified';const observed=data.freshness?.observedAt?new Date(data.freshness.observedAt).toLocaleString():null;
- const source=data.feed?.source||'Imported CSV';const count=Number(data.boardCount)||0;
- if(!count){$('picksGrid').innerHTML=blank('Connect your NBA prop board','Import today’s standard-line CSV, or configure an automatic data source in Render. No lines means no verified picks.');$('pickSummary').textContent=`${(data.games||[]).length} NBA games · waiting for standard lines`;return}
- if(!filter.length){$('picksGrid').innerHTML=blank('No qualified research candidates','No players on this slate have enough pregame history at the supplied standard lines. Check the feed date, upload a new board or change filters.');$('pickSummary').textContent=`${count} standard props · ${data.matched||0} screened sides · ${(data.games||[]).length} NBA games`;return}
- const freshnessNotice=stale?' · STALE / UNVERIFIED — not current picks':'';
- $('pickSummary').textContent=`${count} supported standard lines · ${data.matched} screened directions · ${data.qualified||0} eligible · ${source}${freshnessNotice}`;
- $('listTag').textContent=stale?'Old / unverified lines':state.side==='WORST'?'Not automatic LESS plays':'Research only';
- $('picksGrid').innerHTML=filter.map((c,i)=>{
-  const h=c.hit10;const pct=h?.sample?`${fmt(h.winPct,0)}%`:'—';
-  const reasons=(c.reasons||[]).slice(0,7);const risks=(c.checks||[]).slice(0,8);const ev=c.evidence||{};
-  const labels=[c.zoneScore!=null?`Zone ${fmt(c.zoneScore,0)}/100`:'Zone not scored',c.minutes!=null?`${c.minutes} min L5`:'Minutes missing',`${risks.length} checks pending`];
-  return `<article class="pick-card">
-    <div class="pick-top"><span class="rank">#${i+1} · ${c.unfavorable?'UNFAVORABLE SHOT-ZONE MATCHUP':'RESEARCH CANDIDATE'}</span><span class="grade">${esc(c.score)}<small>SCREENING SCORE / 100</small></span></div>
-    <h3 class="player-name">${esc(c.player)}</h3><div class="matchup">${esc(c.team)} vs ${esc(c.opponent)} · ${esc(STAT[c.stat]||c.stat)}</div>
-    <div class="pick-main"><div><span class="line-amount">${esc(c.line)}<span>${esc(STAT[c.stat]||c.stat)} · exact source line</span></span></div><div style="text-align:right"><span class="side-pill ${esc(c.side)}">${c.side==='MORE'?'MORE ↑':'LESS ↓'}</span><div class="stat-name">Baseline ${fmt(c.projected)}</div></div></div>
-    <div class="microstats"><div><strong>${pct}</strong><small>L10 TRUE WINS</small></div><div><strong>${fmt(c.margin)}</strong><small>DIRECTIONAL GAP</small></div><div><strong>${fmt(c.minutes)}</strong><small>LAST 5 MIN / G</small></div></div>
-    <div class="tag-row">${labels.map((x,j)=>`<span class="tag ${j===2?'warning':''}">${esc(x)}</span>`).join('')}${stale?'<span class="tag warning">SOURCE STALE</span>':''}</div>
-    <button class="expand" type="button" aria-expanded="false">Why this ranks here ＋</button>
-    <div class="evidence" hidden><h4>Supporting data</h4><ul>${reasons.map(x=>`<li>${esc(x)}</li>`).join('')||'<li>No verified supporting measurements available</li>'}</ul><h4>Evidence grades (not win probabilities)</h4><div class="tag-row"><span class="tag">Baseline ${esc(ev.baseline??'—')}</span><span class="tag">Recent ${esc(ev.hitHistory??'—')}</span><span class="tag">Opportunity ${esc(ev.opportunity??'—')}</span><span class="tag">Matchup ${esc(ev.matchup??'—')}</span><span class="tag">Confidence ${esc(ev.confidence??'—')}</span></div><h4>Still needs checking</h4><ul>${risks.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
-    <h4>Independent final checks</h4><div class="verify"><label><input type="checkbox"> Injuries & starter</label><label><input type="checkbox"> Projected minutes</label><label><input type="checkbox"> Actual opportunity</label><label><input type="checkbox"> Current line & payout</label></div>
-    <p class="review-note">${stale?'This line is not fresh. Refresh before considering it.':'No verified betting edge; complete the checks and run a second veto review.'}</p></div>
-    <button class="button primary full-report" type="button" data-pick-index="${i}">Full player report ↗</button>
+ const selected=effectiveCandidates();$('pickCount').textContent=selected.length;
+ const stale=data.freshness?.status==='stale'||data.freshness?.status==='unverified';
+ const source=data.feed?.source||'Imported CSV',count=data.boardCount||0;
+ $('pickSummary').textContent=`${count} standard lines · ${data.matched||0} scored directions · ${data.qualified||0} eligible · ${source}${stale?' · STALE': ''}`;
+ $('listTag').textContent=stale?'STALE LINES':state.side==='WORST'?'Tough defensive matchups · not automatic unders':'Source-aware research · NOT final bets';
+ if(!selected.length){$('picksGrid').innerHTML=blank('No eligible Top 10 candidates','Check the line source, injuries and your date filters. The app does not force a pick when evidence is missing.');return;}
+ $('picksGrid').innerHTML=selected.map((c,i)=>{
+  const ev=c.evidence||{},match=c.defenseGrade||{},directMatch=c.matchupGrade||{},checks=c.sourceChecks||[];
+  const l10=c.hit10?.sample?`${fmt(c.hit10.winPct,0)}%`:'—';
+  const pending=checks.filter(x=>['pending','unverified','veto'].includes(x.state));
+  const primary=checks.filter(x=>['observed','confirmed','expected','reported','proxy','partial'].includes(x.state)).slice(0,4);
+  const mismatch=state.side==='WORST';
+  return `<article class="pick-card upgraded-card">
+  <div class="pick-top"><span class="rank">#${i+1} · ${mismatch?'TOUGH MATCHUP':'RFPP RESEARCH CANDIDATE'}</span><span class="grade">${esc(c.score)}<small>EVIDENCE SCORE / 100</small></span></div>
+  <h3 class="player-name">${esc(c.player)}</h3><div class="matchup">${esc(c.team)} vs ${esc(c.opponent)} · ${esc(STAT[c.stat]||c.stat)}</div>
+  <div class="pick-main"><div><span class="line-amount">${esc(c.line)}<span>${esc(STAT[c.stat]||c.stat)} · standard line</span></span></div>
+  <div class="pick-side"><span class="side-pill ${esc(c.side)}">${esc(c.side)}</span><div class="stat-name">Baseline ${fmt(c.projected)}</div></div></div>
+  <div class="microstats"><div><strong>${l10}</strong><small>L10 TRUE WINS</small></div><div><strong>${fmt(c.margin)}</strong><small>BASELINE MARGIN</small></div><div><strong>${fmt(c.minutes)}</strong><small>ACTUAL L5 MIN/G</small></div></div>
+  <div class="grade-band"><span class="matchup-grade">VS DEFENSE <b>${match.available?esc(directMatch.letter||'—'):'—'}</b><small>${match.available?esc(c.side)+' · '+esc(match.rank)+'/'+esc(match.totalTeams)+' · G/F/C proxy':'NOT VERIFIED'}</small></span><span class="grade-status">${esc(c.lean||'NO LEAN')}</span></div>
+  <div class="tag-row"><span class="tag">Opp defense ${esc(ev.defense??'—')}/100</span><span class="tag">Role: ${esc(c.lineupStatus||'unverified')}</span><span class="tag warning">${pending.length} pending/veto checks</span></div>
+  <button class="expand" type="button" aria-expanded="false">Source evidence & remaining checks ＋</button>
+  <div class="evidence" hidden><h4>Measured reasons for ranking</h4><ul>${(c.reasons||[]).slice(0,8).map(x=>`<li>${esc(x)}</li>`).join('')||'<li>No measured support available.</li>'}</ul>
+  <h4>Evidence grades · not probabilities</h4><div class="tag-row"><span class="tag">Baseline ${esc(ev.baseline??'—')}</span><span class="tag">Recent ${esc(ev.hitHistory??'—')}</span><span class="tag">Opportunity ${esc(ev.opportunity??'—')}</span><span class="tag">Defense ${esc(ev.defense??'—')}</span><span class="tag">Context ${esc(ev.context??'—')}</span><span class="tag">Confidence ${esc(ev.confidence??'—')}</span></div>
+  <h4>Automatically sourced checks</h4><div class="source-mini">${primary.map(x=>`<div><span class="source-state ${checkStyle(x.state)}">${esc(checkBadgeText(x.state))}</span><b>${esc(x.name)}</b><small>${esc(x.detail)}</small></div>`).join('')||'<p>Public sources not currently accessible.</p>'}</div>
+  <h4>Still pending · must be checked</h4><ul>${pending.slice(0,7).map(x=>`<li>${esc(x.name)} · ${esc(x.detail)}</li>`).join('')||'<li>No unresolved data checks in this view; complete final veto and market price independently.</li>'}</ul>
+  <p class="review-note">Source checks are generated from real observations. Expected starters are NOT confirmed; historical minutes are NOT independent projections. No calibrated P(win) or price edge.</p></div>
+  <button class="button primary full-report" type="button" data-pick-index="${i}">Open full source report ↗</button>
   </article>`}).join('');
- $('picksGrid').querySelectorAll('.full-report').forEach(btn=>btn.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('scout-open-insight',{detail:filter[Number(btn.dataset.pickIndex)]}))));
- $('picksGrid').querySelectorAll('.expand').forEach(btn=>btn.addEventListener('click',()=>{const content=btn.nextElementSibling;content.hidden=!content.hidden;btn.setAttribute('aria-expanded',String(!content.hidden));btn.textContent=content.hidden?'Why this ranks here ＋':'Hide evidence −'}));
- $('picksGrid').querySelectorAll('.verify').forEach(group=>group.addEventListener('change',()=>{const check=Array.from(group.querySelectorAll('input')).every(x=>x.checked);const note=group.nextElementSibling;note.textContent=check?'Checklist marked by you — independent second-pass veto and true edge still required.':'Pending: verify injury, role, opportunity, line and price.'}));
+ $('picksGrid').querySelectorAll('.expand').forEach(b=>b.onclick=()=>{const el=b.nextElementSibling;el.hidden=!el.hidden;b.setAttribute('aria-expanded',String(!el.hidden));b.textContent=el.hidden?'Source evidence & remaining checks ＋':'Hide source evidence −'});
+ $('picksGrid').querySelectorAll('.full-report').forEach(b=>b.onclick=()=>window.dispatchEvent(new CustomEvent('scout-open-insight',{detail:selected[Number(b.dataset.pickIndex)]})));
 }
+function renderGradeBoard(){
+ const list=$('gradesGrid');if(!list)return;const d=state.data;
+ if(!d){list.innerHTML=blank('Rankings loading','Retrieving current prop research.');return;}
+ const raw=Array.isArray(d.all)?d.all:[],needle=($('gradeSearch').value||'').toLowerCase().trim();
+ const direction=$('gradeDirection').value,stat=$('gradeStat').value,sort=$('gradeSort').value,includePass=$('gradePass').checked;
+ let pool=raw.filter(x=>(includePass||x.state!=='PASS')&&(stat==='ALL'||x.stat===stat)&&(!needle||(x.player+' '+x.team+' '+x.stat+' '+x.opponent).toLowerCase().includes(needle))&&(direction==='ALL'||direction==='BEST'||x.side===direction));
+ if(direction==='BEST'){
+  const best=new Map();for(const x of pool){const k=[x.player,x.stat,x.line,x.team].join('|');const old=best.get(k);if(!old||x.score>old.score)best.set(k,x)}pool=[...best.values()];
+ }
+ const accessor=x=>({score:x.score,defense:x.evidence?.defense??-1,baseline:x.evidence?.baseline??-1,opportunity:x.evidence?.opportunity??-1,confidence:x.evidence?.confidence??-1,context:x.evidence?.context??-1,last10:x.hit10?.sample?x.hit10.winPct:-1,margin:x.margin??-999})[sort]??-1;
+ pool.sort((a,b)=>accessor(b)-accessor(a)||Number(a.state==='PASS')-Number(b.state==='PASS')||String(a.player).localeCompare(String(b.player)));
+ state.gradeVisible=pool;
+ const shown=pool.slice(0,state.gradeLimit||80);
+ $('gradeSummary').textContent=`${pool.length} displayed research directions · sorted by ${$('gradeSort').selectedOptions[0]?.textContent||'score'} · G/F/C defense scores are proxies · scores are not probabilities`;
+ list.innerHTML=shown.length?shown.map((x,i)=>{
+  const def=x.defenseGrade||{},direct=x.matchupGrade||{},pos=x.lineupRole||'',l10=x.hit10?.sample?`${x.hit10.win}/${x.hit10.sample}`:'—';
+  return `<button type="button" class="grade-item" data-grade-index="${i}" aria-label="Open ${esc(x.player)} ${esc(x.stat)} ${esc(x.side)} research"><span class="grade-name"><b>${esc(x.player)}</b><small>${esc(x.team)} vs ${esc(x.opponent)} · ${esc(STAT[x.stat]||x.stat)} ${esc(x.line)}</small></span><span class="grade-direction"><span class="side-pill ${esc(x.side)}">${esc(x.side)}</span><small>${esc(x.lean||'research')}</small></span><span class="grade-number"><b>${esc(x.score)}</b><small>OVERALL</small></span><span class="grade-number"><b>${def.available?esc(direct.letter||'—'):'—'}</b><small>VS DEF</small></span><span class="grade-number"><b>${esc(x.evidence?.opportunity??'—')}</b><small>OPP.</small></span><span class="grade-number"><b>${esc(l10)}</b><small>L10 WINS</small></span><span class="grade-number"><b>${esc(x.pendingCount??'—')}</b><small>PENDING</small></span></button>`;
+ }).join(''):blank('No matching props','Adjust the direction, stat, keyword or include-PASS filter.');
+ const more=$('gradeMore');more.hidden=pool.length<=shown.length;more.textContent=`Show more (${Math.max(0,pool.length-shown.length)} remaining)`;
+ list.querySelectorAll('.grade-item').forEach(row=>row.onclick=()=>window.dispatchEvent(new CustomEvent('scout-open-insight',{detail:shown[Number(row.dataset.gradeIndex)]})));
+}
+
 function showFeed(d){const feed=d.feed||{},fr=d.freshness||{},n=d.boardCount||0;
  if(!feed.configured&&feed.status!=='uploaded'){$('setupNote').hidden=false;notify('No automatic prop feed connected','Use Import CSV now, or connect your approved provider in Render.');}
  else if(feed.error){$('setupNote').hidden=false;notify('Feed connection problem',feed.error,'error')}
@@ -58,12 +82,12 @@ function showFeed(d){const feed=d.feed||{},fr=d.freshness||{},n=d.boardCount||0;
 }
 async function loadPicks(){if(state.feedMode==='import'&&state.lastFile)return uploadCsv(state.lastFile,true);
  $('refreshBtn').disabled=true;$('refreshBtn').textContent='Refreshing…';$('picksGrid').innerHTML=blank('Loading today’s board','Reading ESPN game history and the configured prop line feed.');
- try{const date=$('dateInput').value;const data=await request(`/api/picks?date=${encodeURIComponent(date)}`);state.data=data;setGames(data);showFeed(data);renderPicks();$('netStatus').classList.add('ready');$('netStatus').innerHTML='<i></i> Connected';}
+ try{const date=$('dateInput').value;const data=await request(`/api/picks?date=${encodeURIComponent(date)}`);state.data=data;setGames(data);showFeed(data);renderPicks();renderGradeBoard();$('netStatus').classList.add('ready');$('netStatus').innerHTML='<i></i> Connected';}
  catch(e){notify('Could not load picks',e.message,'error');$('picksGrid').innerHTML=blank('Research board unavailable',e.message)}finally{$('refreshBtn').disabled=false;$('refreshBtn').textContent='↻ Refresh'}
 }
 async function uploadCsv(contents,silent=false){
  $('refreshBtn').disabled=true;if(!silent)notify('Analyzing imported lines','Matching standard props with NBA slate and boxscore data…');
- try{const data=await request('/api/picks/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:$('dateInput').value,csv:contents})});state.data=data;state.feedMode='import';state.lastFile=contents;state.game='ALL';setGames(data);showFeed(data);renderPicks();}
+ try{const data=await request('/api/picks/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:$('dateInput').value,csv:contents})});state.data=data;state.feedMode='import';state.lastFile=contents;state.game='ALL';setGames(data);showFeed(data);renderPicks();renderGradeBoard();}
  catch(e){notify('Could not read imported CSV',e.message,'error');$('picksGrid').innerHTML=blank('CSV import failed',e.message)}finally{$('refreshBtn').disabled=false}
 }
 async function loadLines(){
@@ -100,7 +124,7 @@ async function analyzePlayer(){const team=$('teamSelect').value,id=$('playerSele
  }catch(e){$('researchResult').innerHTML=blank('Could not complete analysis',e.message)}finally{$('researchBtn').disabled=false}
 }
 async function boot(){
- $('tabPicks').onclick=()=>setTab('picks');$('tabExplore').onclick=()=>setTab('explore');$('tabLines').onclick=()=>setTab('lines');$('lineSearch').oninput=renderLines;$('lineTier').onchange=renderLines;$('refreshBtn').onclick=()=>{state.feedMode='remote';state.lastFile=null;loadPicks()};$('sideFilter').onchange=e=>{state.side=e.target.value;renderPicks()};$('dateInput').onchange=()=>{state.game='ALL';state.lines=null;loadPicks()};$('teamSelect').onchange=onTeam;$('researchBtn').onclick=analyzePlayer;
+ $('tabPicks').onclick=()=>setTab('picks');$('tabGrades').onclick=()=>setTab('grades');$('tabExplore').onclick=()=>setTab('explore');$('tabLines').onclick=()=>setTab('lines');$('lineSearch').oninput=renderLines;for(const key of ['gradeSearch','gradeDirection','gradeStat','gradeSort','gradePass']){$(key).addEventListener(key==='gradeSearch'?'input':'change',()=>{state.gradeLimit=80;renderGradeBoard()})}$('gradeMore').onclick=()=>{state.gradeLimit+=80;renderGradeBoard()};$('lineTier').onchange=renderLines;$('refreshBtn').onclick=()=>{state.feedMode='remote';state.lastFile=null;loadPicks()};$('sideFilter').onchange=e=>{state.side=e.target.value;renderPicks()};$('dateInput').onchange=()=>{state.game='ALL';state.lines=null;loadPicks()};$('teamSelect').onchange=onTeam;$('researchBtn').onclick=analyzePlayer;
  $('csvInput').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>350000){notify('CSV too large','Export only the standard NBA props, maximum 350 KB','error');return}const t=await f.text();await uploadCsv(t);e.target.value=''};
  try{const status=await request('/api/status');$('dateInput').value=status.date;$('netStatus').innerHTML='<i></i> Connected';$('netStatus').classList.add('ready')}
  catch{$('dateInput').value=new Date().toISOString().slice(0,10)}

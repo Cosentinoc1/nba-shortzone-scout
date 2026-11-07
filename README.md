@@ -170,3 +170,7 @@ Three referenced public YouTube videos inspired the **questions** in the researc
 - Final Round Sports, *NBA Best Bets, Picks, Player Props, Spreads* — https://youtu.be/Jh2Hhw1CwYE : full slate, play-type, DvP, back-to-back and spreads, waiting for injury status.
 
 Do not treat content creators' selected winning examples as predictive validation; test these signals out of sample and retain no-bet cases. See `CONNECT_GITHUB.md` for continuous deployment without repeated ZIP uploads.
+
+## v1.8 update: Top 10, Grade Board, independently sourced checks
+
+See [RELEASE_V18.md](RELEASE_V18.md) for new functionality, limitations, data-provenance rules, optional authorized lineup integration and deployment notes. The original full court analytics view remains available at `/classic`.

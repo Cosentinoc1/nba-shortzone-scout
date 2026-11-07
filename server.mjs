@@ -12,6 +12,7 @@ import {normalizeRows,parseCsv,rankBoard} from './lib/props.mjs';
 import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
 import {buildPropInsight} from './lib/insight.mjs';
 import {externalContextForDay} from './lib/context.mjs';
+import {applyVerification} from './lib/decision.mjs';
 const ROOT=path.dirname(fileURLToPath(import.meta.url));
 const snapshotDefense=JSON.parse(await readFile(path.join(ROOT,'data/defense.json'),'utf8'));
 const snapshotPlayers=JSON.parse(await readFile(path.join(ROOT,'data/players.json'),'utf8'));
@@ -131,7 +132,7 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
    await saveCache();
  }catch(e){error=e.message;refreshStage='Retained validated snapshot';console.warn('Refresh:',e.message)}finally{busy=false}
 }
-function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.7.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
+function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.8.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
 function json(res,obj,statusCode=200){res.writeHead(statusCode,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj))}
 function requireTeam(code){const t=normalizeTeam(code);return rosters[t]?t:null}
 async function handler(req,res){
@@ -168,7 +169,7 @@ async function handler(req,res){
     const found=games.find(g=>g.away===team||g.home===team);
     const opponent=found?(found.home===team?found.away:found.home):null;
     let ctx={injuries:[],games:[],source:'ESPN data unavailable',error:'External context not yet available'};
-    try{ctx=await externalContextForDay(day)}catch(e){ctx.error=String(e.message||e)}
+    try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.error=String(e.message||e)}
     const result=buildPropInsight({gameCache,rosters,players,defense,day,team,opponent,playerName:name,line,market,tier,observedAt,expectedMinutes:minutes,
      context:{...ctx,game:ctx.games?.find(g=>g.id===found?.id||(g.away===team||g.home===team))||null}});
     return json(res,result);

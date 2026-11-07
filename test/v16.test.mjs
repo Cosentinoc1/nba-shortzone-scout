@@ -25,7 +25,7 @@ test('v1.6 separates MORE and LESS and returns worst-alignments without treating
  assert.ok(board.topLess.every(p=>p.side==='LESS'));
  assert.ok(board.unfavorable.every(p=>p.unfavorable===true));
  assert.ok(board.candidates.every(p=>p.evidence?.confidence!=null));
- assert.ok(board.candidates.length<=6&&board.topLess.length<=6);
+ assert.ok(board.candidates.length<=10&&board.topLess.length<=10);
  assert.ok(board.warning.includes('NOT final picks'));
 });
 test('no candidate uses old or clock-invalid exact lines',()=>{
@@ -44,5 +44,5 @@ test('All Lines view distinguishes standard, goblin and unknown market without r
 test('full slate ranks quickly and retains transparent limited candidate payload',()=>{
  const f=fixture();const t=performance.now();const out=rankBoard({...f,rosters,players,defense,day:'2026-11-07',now:Date.parse('2026-11-07T15:00:00Z')});
  assert.ok(performance.now()-t<1400);
- assert.ok(out.all.length<=64);assert.equal(out.allCount,out.matched);
+ assert.ok(out.all.length<=1000);assert.equal(out.allCount,out.matched);
 });
