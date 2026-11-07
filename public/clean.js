@@ -19,6 +19,10 @@ function effectiveCandidates(){
 }
 const checkStyle=x=>x==='veto'?'bad':x==='observed'||x==='confirmed'?'good':x==='expected'||x==='proxy'||x==='partial'||x==='model'||x==='reported'?'soft':'pending';
 const checkBadgeText=x=>({veto:'VETO',observed:'SOURCED',confirmed:'CONFIRMED',expected:'EXPECTED',proxy:'PROXY',partial:'PARTIAL',model:'HISTORY',reported:'REPORTED',pending:'PENDING',unverified:'UNVERIFIED'})[x]||String(x).toUpperCase();
+function defenseText(d,side){if(!d?.available)return 'NOT VERIFIED';
+ const pos=d.positionCandidates?.join('/')||d.position||'unknown';
+ if(d.positionCandidates){const rng=d.range?.[side==='LESS'?'less':'more'];return side+' · '+pos+' EST. FANTASY POSITION'+(rng?' · '+rng.join('–')+'/100 range':'');}
+ return side+' · '+pos+' · SOURCED EXACT POSITION';}
 function renderPicks(){
  const data=state.data;if(!data)return;
  const selected=effectiveCandidates();$('pickCount').textContent=selected.length;
@@ -39,7 +43,7 @@ function renderPicks(){
   <div class="pick-main"><div><span class="line-amount">${esc(c.line)}<span>${esc(STAT[c.stat]||c.stat)} · standard line</span></span></div>
   <div class="pick-side"><span class="side-pill ${esc(c.side)}">${esc(c.side)}</span><div class="stat-name">History ${fmt(c.projected)}${c.rotowire?.matched?' · RW '+fmt(c.rotowire.projectedStat):''}</div></div></div>
   <div class="microstats"><div><strong>${l10}</strong><small>L10 TRUE WINS</small></div><div><strong>${fmt(c.margin)}</strong><small>BASELINE MARGIN</small></div><div><strong>${fmt(c.rotowire?.matched?c.rotowire.projectedMinutes:c.minutes)}</strong><small>${c.rotowire?.matched?'RW PROJECTED MIN':'ACTUAL L5 MIN/G'}</small></div></div>
-  <div class="grade-band"><span class="matchup-grade">VS DEFENSE <b>${match.available?esc(directMatch.letter||'—'):'—'}</b><small>${match.available?esc(c.side)+' · '+esc(match.rank)+'/'+esc(match.totalTeams)+' · G/F/C proxy':'NOT VERIFIED'}</small></span><span class="grade-status">${esc(c.lean||'NO LEAN')}</span></div>
+  <div class="grade-band"><span class="matchup-grade">VS DEFENSE <b>${match.available?esc(directMatch.letter||'—'):'—'}</b><small>${esc(defenseText(match,c.side))}</small></span><span class="grade-status">${esc(c.lean||'NO LEAN')}</span></div>
   <div class="tag-row"><span class="tag">Opp defense ${esc(ev.defense??'—')}/100</span><span class="tag">Role: ${esc(c.lineupStatus||'unverified')}</span>${c.rotowire?.matched?'<span class="tag">RW margin '+esc(c.rotowire.modelGap)+' · '+esc(c.rotowire.minutesChangePct)+'% mins change</span>':''}<span class="tag warning">${pending.length} pending/veto checks</span></div>
   <button class="expand" type="button" aria-expanded="false">Source evidence & remaining checks ＋</button>
   <div class="evidence" hidden><h4>Measured reasons for ranking</h4><ul>${(c.reasons||[]).slice(0,8).map(x=>`<li>${esc(x)}</li>`).join('')||'<li>No measured support available.</li>'}</ul>
@@ -65,6 +69,7 @@ function renderGradeBoard(){
  if(direction==='PROMISING')pool=pool.filter(x=>['PRIORITY','PROMISING'].includes(x.edge?.tier)&&x.state!=='PASS');
  if(direction==='ALIGNED')pool=pool.filter(x=>x.edge?.modelAgrees&&x.state!=='PASS');
  if(direction==='EXACT_DVP')pool=pool.filter(x=>x.defenseGrade?.available&&!x.defenseGrade.proxy&&x.state!=='PASS');
+ if(direction==='ANY_DVP')pool=pool.filter(x=>x.defenseGrade?.available&&x.state!=='PASS');
  if(direction==='BEST'){
   const best=new Map();for(const x of pool){const k=[x.player,x.stat,x.line,x.team].join('|');const old=best.get(k);if(!old||x.score>old.score)best.set(k,x)}pool=[...best.values()];
  }
@@ -72,10 +77,10 @@ function renderGradeBoard(){
  pool.sort((a,b)=>accessor(b)-accessor(a)||Number(a.state==='PASS')-Number(b.state==='PASS')||String(a.player).localeCompare(String(b.player)));
  state.gradeVisible=pool;
  const shown=pool.slice(0,state.gradeLimit||80);
- $('gradeSummary').textContent=`${pool.length} research directions · ${pool.filter(x=>['PRIORITY','PROMISING'].includes(x.edge?.tier)).length} statistically promising · ${pool.filter(x=>x.edge?.hasModel).length} with independent RotoWire projection · position-specific public DvP when successfully refreshed · scores are NOT probabilities`;
+ $('gradeSummary').textContent=`${pool.length} research directions · ${pool.filter(x=>['PRIORITY','PROMISING'].includes(x.edge?.tier)).length} statistically promising · ${pool.filter(x=>x.edge?.hasModel).length} with independent RotoWire projection · ${d.sourceStatus?.sourcedExact??0} exact matchup directions · ${d.sourceStatus?.sourcedEligibilityEstimates??0} sourced position estimates · scores are NOT probabilities`;
  list.innerHTML=shown.length?shown.map((x,i)=>{
   const def=x.defenseGrade||{},direct=x.matchupGrade||{},pos=x.lineupRole||'',l10=x.hit10?.sample?`${x.hit10.win}/${x.hit10.sample}`:'—';
-  return `<button type="button" class="grade-item edge-${esc((x.edge?.tier||"NEUTRAL").toLowerCase())}" data-grade-index="${i}" aria-label="Open ${esc(x.player)} ${esc(x.stat)} ${esc(x.side)} research"><span class="grade-name"><b>${esc(x.player)}</b><small>${esc(x.team)} vs ${esc(x.opponent)} · ${esc(STAT[x.stat]||x.stat)} ${esc(x.line)}${x.rotowire?.matched?' · RW '+fmt(x.rotowire.projectedStat)+' · '+fmt(x.rotowire.projectedMinutes)+' min':''}</small></span><span class="grade-direction"><span class="side-pill ${esc(x.side)}">${esc(x.side)}</span><small>${esc(x.lean||'research')} · ${esc(x.edge?.normalizedMargin??'—')}σ</small></span><span class="grade-number"><b>${esc(x.score)}</b><small>EVIDENCE</small></span><span class="grade-number"><b>${def.available?esc(direct.letter||'—'):'—'}</b><small>${def.available?'EXACT VS DEF':'DVP PENDING'}</small></span><span class="grade-number"><b>${esc(x.evidence?.opportunity??'—')}</b><small>OPP.</small></span><span class="grade-number"><b>${esc(l10)}</b><small>L10 WINS</small></span><span class="grade-number"><b>${esc(x.pendingCount??'—')}</b><small>PENDING</small></span></button>`;
+  return `<button type="button" class="grade-item edge-${esc((x.edge?.tier||"NEUTRAL").toLowerCase())}" data-grade-index="${i}" aria-label="Open ${esc(x.player)} ${esc(x.stat)} ${esc(x.side)} research"><span class="grade-name"><b>${esc(x.player)}</b><small>${esc(x.team)} vs ${esc(x.opponent)} · ${esc(STAT[x.stat]||x.stat)} ${esc(x.line)}${x.rotowire?.matched?' · RW '+fmt(x.rotowire.projectedStat)+' · '+fmt(x.rotowire.projectedMinutes)+' min':''}</small></span><span class="grade-direction"><span class="side-pill ${esc(x.side)}">${esc(x.side)}</span><small>${esc(x.lean||'research')} · ${esc(x.edge?.normalizedMargin??'—')}σ</small></span><span class="grade-number"><b>${esc(x.score)}</b><small>EVIDENCE</small></span><span class="grade-number"><b>${def.available?esc(direct.letter||'—'):'—'}</b><small>${def.available?(def.proxy?'POSITION EST.':'EXACT VS DEF'):'DVP PENDING'}</small></span><span class="grade-number"><b>${esc(x.evidence?.opportunity??'—')}</b><small>OPP.</small></span><span class="grade-number"><b>${esc(l10)}</b><small>L10 WINS</small></span><span class="grade-number"><b>${esc(x.pendingCount??'—')}</b><small>PENDING</small></span></button>`;
  }).join(''):blank('No matching props','Adjust the direction, stat, keyword or include-PASS filter.');
  const more=$('gradeMore');more.hidden=pool.length<=shown.length;more.textContent=`Show more (${Math.max(0,pool.length-shown.length)} remaining)`;
  list.querySelectorAll('.grade-item').forEach(row=>row.onclick=()=>window.dispatchEvent(new CustomEvent('scout-open-insight',{detail:shown[Number(row.dataset.gradeIndex)]})));
