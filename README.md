@@ -1,3 +1,13 @@
+# NBA Scout v1.7 · Clickable Prop Intelligence
+
+Every Top Pick and observed provider offer can open an evidence report that includes last 5/10 game-by-game actual stats, historical clearance and pushes, baseline/lean scores (not probabilities), game odds, ESPN NBA injury status, position-group boxscore proxy and B2B context. Supported category coverage is bounded: unsupported stats are never given fabricated hit rates. RotoWire minutes, confirmed starters, potential assists, rebound chances, player sportsbook markets and payouts are **not** auto-verified; sourced manual review links and optional user-entered minutes are provided.
+
+## Deployment
+
+Upload `NBA_Scout_RELEASE_v1.7.zip` to GitHub root. The existing NBA Scout Auto-Update workflow extracts newest release, tests it and commits source. Render autodeploy uses `npm install` / `npm start`. Confirm `/api/status` version 1.7, `/api/picks`, `/api/lines`, and `/api/insight` with current team/player/line.
+
+ESPN source: https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries and https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=YYYYMMDD . Official injury cross-check https://official.nba.com/nba-injury-report-2026-27-season/. Independent minutes https://www.rotowire.com/basketball/nba-lineups.php.
+
 ## v1.6 — Faster rankings and provider coverage (2026-11-07)
 
 - Fixes slate-ranking timeout risk with per-team game indexes and cached date parsing.

@@ -10,6 +10,8 @@ import {auditDay} from './lib/audit.mjs';
 import {researchPlayer,STATS} from './lib/research.mjs';
 import {normalizeRows,parseCsv,rankBoard} from './lib/props.mjs';
 import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
+import {buildPropInsight} from './lib/insight.mjs';
+import {externalContextForDay} from './lib/context.mjs';
 const ROOT=path.dirname(fileURLToPath(import.meta.url));
 const snapshotDefense=JSON.parse(await readFile(path.join(ROOT,'data/defense.json'),'utf8'));
 const snapshotPlayers=JSON.parse(await readFile(path.join(ROOT,'data/players.json'),'utf8'));
@@ -129,7 +131,7 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
    await saveCache();
  }catch(e){error=e.message;refreshStage='Retained validated snapshot';console.warn('Refresh:',e.message)}finally{busy=false}
 }
-function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.6.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
+function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.7.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
 function json(res,obj,statusCode=200){res.writeHead(statusCode,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj))}
 function requireTeam(code){const t=normalizeTeam(code);return rosters[t]?t:null}
 async function handler(req,res){
@@ -141,10 +143,37 @@ async function handler(req,res){
   if(pathname==='/api/props-feed'){
    const feed=await loadPropsFeed();return json(res,feedStatusOnly(feed));
   }
-if(pathname==='/api/lines'&&req.method==='GET'){
-  const feed=await loadPropsFeed();
-  return json(res,{...feedStatusOnly(feed),offers:(feed.offers||[]).slice(0,10000)});
-}
+  if(pathname==='/api/lines'&&req.method==='GET'){
+   const feed=await loadPropsFeed();
+   return json(res,{...feedStatusOnly(feed),offers:(feed.offers||[]).slice(0,10000)});
+  }
+   if(pathname==='/api/lines'&&req.method==='GET'){
+    const feed=await loadPropsFeed();return json(res,{...feedStatusOnly(feed),offers:(feed.offers||[]).slice(0,10000)});
+   }
+   if(pathname==='/api/insight'&&req.method==='GET'){
+    const day=u.searchParams.get('date')||localDate();
+    if(!validSlateDay(day))return json(res,{error:'Invalid NBA regular-season date'},400);
+    const team=requireTeam(u.searchParams.get('team'));
+    const name=String(u.searchParams.get('player')||'').trim().slice(0,120);
+    const line=Number(u.searchParams.get('line'));
+    const market=String(u.searchParams.get('market')||'').trim().slice(0,100);
+    const tier=String(u.searchParams.get('tier')||'standard').slice(0,50);
+    const observedAt=u.searchParams.get('observedAt')||null;
+    const minutes=u.searchParams.has('expectedMinutes')?Number(u.searchParams.get('expectedMinutes')):null;
+    if(!team||!name||!market||!u.searchParams.has('line')||!Number.isFinite(line)||line<0||line>250)
+     return json(res,{error:'Valid team, player, stat and exact line are required'},400);
+    if(minutes!==null&&(!Number.isFinite(minutes)||minutes<1||minutes>48))
+     return json(res,{error:'Projected minutes must be between 1 and 48'},400);
+    let games=[];try{games=await getSchedule(false,day)}catch{}
+    const found=games.find(g=>g.away===team||g.home===team);
+    const opponent=found?(found.home===team?found.away:found.home):null;
+    let ctx={injuries:[],games:[],source:'ESPN data unavailable',error:'External context not yet available'};
+    try{ctx=await externalContextForDay(day)}catch(e){ctx.error=String(e.message||e)}
+    const result=buildPropInsight({gameCache,rosters,players,defense,day,team,opponent,playerName:name,line,market,tier,observedAt,expectedMinutes:minutes,
+     context:{...ctx,game:ctx.games?.find(g=>g.id===found?.id||(g.away===team||g.home===team))||null}});
+    return json(res,result);
+   }
+
   if(pathname==='/api/picks'&&req.method==='GET'){
    const day=u.searchParams.get('date')||localDate();
    if(!validSlateDay(day))return json(res,{error:'Invalid NBA regular season date'},400);
@@ -234,7 +263,7 @@ if(pathname==='/api/lines'&&req.method==='GET'){
    fullRefresh().catch(e=>console.warn(e));return json(res,{accepted:true,status:status()},202);
   }
   if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
-  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css'};
+  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/insight-ui.js':'insight-ui.js','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css'};
   const name=files[pathname];if(!name)return json(res,{error:'Not found'},404);
   const dest=path.join(ROOT,'public',name);if(!existsSync(dest))return json(res,{error:'Not found'},404);
   const type=name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8';
