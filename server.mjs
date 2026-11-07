@@ -141,6 +141,10 @@ async function handler(req,res){
   if(pathname==='/api/props-feed'){
    const feed=await loadPropsFeed();return json(res,feedStatusOnly(feed));
   }
+if(pathname==='/api/lines'&&req.method==='GET'){
+  const feed=await loadPropsFeed();
+  return json(res,{...feedStatusOnly(feed),offers:(feed.offers||[]).slice(0,10000)});
+}
   if(pathname==='/api/picks'&&req.method==='GET'){
    const day=u.searchParams.get('date')||localDate();
    if(!validSlateDay(day))return json(res,{error:'Invalid NBA regular season date'},400);
