@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout v2.2 · RotoWire Projections & Top 10</title><link rel="stylesheet" href="/clean.css?v=2.2"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout v2.4 · Clear MORE / LESS Grades</title><link rel="stylesheet" href="/clean.css?v=2.4"></head>
 <body>
 <div class="app">
  <header class="topbar">
@@ -8,7 +8,7 @@
  </header>
  <main>
   <section class="hero">
-   <div class="eyebrow"><span class="line-dot"></span> SMART NBA RESEARCH · RFPP 2.3</div>
+   <div class="eyebrow"><span class="line-dot"></span> SMART NBA RESEARCH · RFPP 2.4</div>
    <div class="hero-title"><div><h1>Better research.<br><span>Clearer decisions.</span></h1><p>Real prop lines, on-court opportunity and defensive matchups in one clean place. No guesswork disguised as certainty.</p></div><div class="date-wrap"><label for="dateInput">GAME DAY</label><input type="date" id="dateInput" min="2026-10-20" max="2027-04-11"></div></div>
   </section>
   <div class="segmented" role="tablist" aria-label="Research pages"><button id="tabPicks" role="tab" aria-selected="true" class="active" data-tab="picks">Top 10 <span id="pickCount" class="tab-count">0</span></button><button id="tabGrades" role="tab" aria-selected="false" data-tab="grades">Grade Board</button><button id="tabLines" role="tab" aria-selected="false" data-tab="lines">All Lines</button><button id="tabExplore" role="tab" aria-selected="false" data-tab="explore">Player Research</button><a href="/classic">Full Analytics ↗</a></div>
@@ -19,6 +19,7 @@
    <div class="section-heading"><div><div class="overline">TODAY'S SHORTLIST</div><h2>NBA research shortlist <span id="listTag" class="sub-tag">Preliminary</span></h2><p>Top 10 MORE, Top 10 LESS and 10 toughest defensive matchups. Every score shows its sourced and pending checks.</p></div><div class="sort-wrap"><select id="sideFilter" aria-label="Filter direction"><option value="ALL">Top 10 overall</option><option value="MORE">Top 10 MORE</option><option value="LESS">Top 10 LESS</option><option value="WORST">Bottom 10 toughest defenses</option></select></div></div>
    <div id="slateChips" class="slate-chips" role="group" aria-label="Filter today's games"></div>
    <div id="pickSummary" class="summary-line" aria-live="polite">Loading NBA games and player history…</div>
+   <details class="grade-guide"><summary>How to read these picks and defensive grades</summary><p><b>First read MORE or LESS.</b> The defense grade follows that side. <b>A/B</b> favors the chosen side, <b>C</b> is mixed, and <b>D/F</b> works against it. A strong LESS grade means the defense tends to suppress this stat. <b>Position estimate</b> means the exact game-day matchup is unconfirmed. Research scores are not probabilities; pending checks and payout matter.</p></details>
    <div id="picksGrid" class="picks-grid" aria-live="polite"><div class="empty-state"><div class="empty-icon">⌁</div><h3>Loading the research board</h3><p>We're checking the latest available game and prop data.</p></div></div>
    <p class="footnote">Research scores are <b>not win probabilities</b>. A high score does not mean a profitable pick. Payout, line movement and independent minutes/injury projections remain mandatory final checks.</p>
   </section>
@@ -32,6 +33,7 @@
    <label class="grade-pass"><input type="checkbox" id="gradePass"> Include vetoed/PASS rows</label>
   </div>
   <div id="gradeSummary" class="summary-line">Loading all graded props…</div>
+  <details class="grade-guide"><summary>What do A–F, evidence score, and position estimate mean?</summary><p><b>VS DEF:</b> A/B supports that row’s MORE or LESS direction; C is mixed; D/F is unfavorable. The separate <b>overall evidence score</b> combines history, opportunity and projected role, and is not a predicted win %. Position estimates use published fantasy eligibility and can differ from the real matchup. A high grade is not permission to skip the final injury, minutes, exact-line and payout checks.</p></details>
   <div class="grade-list" id="gradesGrid" aria-live="polite"></div>
   <button id="gradeMore" class="button secondary grade-load-more" type="button" hidden>Show more</button>
   <p class="footnote">Overall and matchup scores are evidence screens, never probabilities or payout value. Unverified minutes, starters and market odds always remain separate gates. Source coverage depends on publicly available data.</p>
@@ -61,7 +63,7 @@
   <div id="insightBody" class="insight-body" aria-live="polite"><p>Loading verified sources…</p></div>
  </section>
 </div>
-<script type="module" src="/clean.js?v=2.2"></script>
+<script type="module" src="/clean.js?v=2.4"></script>
 <script type="module" src="/rotowire-upload.js?v=2.0"></script>
-<script type="module" src="/insight-ui.js?v=2.0"></script>
+<script type="module" src="/insight-ui.js?v=2.4"></script>
 </body></html>
