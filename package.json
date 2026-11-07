@@ -1,7 +1,7 @@
 {
   "name": "nba-zone-matchup-scout",
-  "version": "1.4.0",
-  "description": "NBA matchup and player-prop research desk with exact-line evidence, shot-zone projection and leakage-safe backtesting",
+  "version": "1.5.0",
+  "description": "NBA Scout: clean daily player-prop research, conditional independent live lines, CSV import, and explainable evidence-first screening",
   "private": true,
   "type": "module",
   "engines": {

@@ -1,139 +1,38 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NBA · Player vs Defense Shot-Zone Scout</title><link rel="stylesheet" href="/styles.css?v=1.4"></head><body>
-<div class="shell"><header><span class="tag">NBA · SHOT ZONE MATCHUP LAB</span><h1>NBA Shot-Zone Scout · Research Desk</h1><p class="sub">Choose a defending team and a shooter. Compare where that player takes shots with the defense's shot frequency and opponent shooting accuracy—then test the matchup against real minutes, role and the current prop line.</p><div class="hero-strip"><span class="hero-stat"><b>30</b> defensive teams</span><span class="hero-stat" id="coverage">All 30 team rosters · loading player data</span><span class="hero-stat" id="dataAsOf">Source check in progress</span></div></header>
-<nav class="quick-nav" aria-label="Dashboard sections"><a href="#dailySlate">Today's games</a><a href="#matchupControls">Matchup court</a><a href="#researchDesk">Research desk</a><a href="#rankingSection">Top / Worst 6</a><a href="#postgameSection">Backtests</a></nav>
-<section class="card daily-slate" id="dailySlate" aria-labelledby="dailyTitle">
-  <div class="slate-head">
-    <div><div class="slate-kicker">DAILY NBA GAME CENTER</div><h2 id="dailyTitle">Today's Games · Tap to Analyze</h2><p class="sub">Choose a game, then tap the team you want shooting against the opponent. The court, shooter list and matchup grade load automatically.</p></div>
-    <div class="slate-date-controls" aria-label="Game day navigation">
-      <button class="slate-nav" type="button" id="gamePrev" aria-label="Previous game day">‹</button>
-      <input type="date" id="gameDate" aria-label="Game date" min="2026-10-20" max="2027-04-11"/>
-      <button class="slate-nav" type="button" id="gameNext" aria-label="Next game day">›</button>
-      <button class="slate-today" type="button" id="gameToday">Today</button>
-      <button class="slate-nav" type="button" id="gameReload" aria-label="Refresh schedule" title="Refresh schedule">⟳</button>
-    </div>
-  </div>
-  <div class="slate-subline"><span id="gameCount">Loading NBA schedule…</span><span id="gameSource">ESPN game schedule</span></div>
-  <div class="games-grid" id="todayGames" role="list" aria-live="polite"></div>
-  <div class="slate-selection" id="selectedGameHint" role="status" aria-live="polite">Select a game to load its matchup.</div>
-</section>
-<div class="card" id="matchupControls" style="margin-bottom:16px"><div class="signal-head"><div><h2 style="margin-bottom:4px">Choose the matchup</h2><div class="small">Select the defending team, then the offense and any player from all 30 current NBA rosters.</div></div><span class="sourcechip" id="playerSource">NBA 2026–27 player snapshot</span></div>
-<div class="controls"><div class="control"><label for="team">DEFENDING TEAM</label><select id="team"></select></div><div class="control"><label for="offense">SHOOTER'S TEAM</label><select id="offense"></select></div><div class="control wide"><label for="player">OPPOSING PLAYER</label><select id="player"></select></div><div class="control"><label for="measure">COURT VIEW</label><select id="measure"><option value="matchup">Player vs. Defense</option><option value="share">Defense shot frequency</option><option value="fg">Defense opponent FG%</option></select></div></div>
-<div class="matchbar" style="margin:9px 0 11px"><button class="pillbtn primary" id="loadPlayer">Update selected player</button><a class="pillbtn" href="https://www.nba.com/stats/players/shooting?DistanceRange=By%20Zone&Season=2026-27" target="_blank" rel="noopener">Open NBA shooting source</a><span class="sourcechip" id="playerLookupBadge">Connecting…</span></div><div id="playerLookupStatus" class="muted-panel" role="status" aria-live="polite">Selecting a player requests their shot profile from the app server. Saved profiles are shown while fresh ESPN data is being checked.</div><div id="qualityNote" class="muted-panel" role="status"></div>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout · Research & Picks</title><link rel="stylesheet" href="/clean.css?v=1.5"></head>
+<body>
+<div class="app">
+ <header class="topbar">
+  <a class="brand" href="/" aria-label="NBA Scout home"><span class="mark">S<span class="mark-dot"></span></span><span class="brand-name">NBA<span class="brand-light">SCOUT</span><small>PLAYER PROP LAB</small></span></a>
+  <div class="right-head"><span class="net-status" id="netStatus"><i></i> Connecting</span><a class="classic-link" href="/classic">Advanced <span aria-hidden="true">↗</span></a></div>
+ </header>
+ <main>
+  <section class="hero">
+   <div class="eyebrow"><span class="line-dot"></span> SMART NBA RESEARCH · V1.5</div>
+   <div class="hero-title"><div><h1>Better research.<br><span>Clearer decisions.</span></h1><p>Real prop lines, on-court opportunity and defensive matchups in one clean place. No guesswork disguised as certainty.</p></div><div class="date-wrap"><label for="dateInput">GAME DAY</label><input type="date" id="dateInput" min="2026-10-20" max="2027-04-11"></div></div>
+  </section>
+  <div class="segmented" role="tablist" aria-label="Research pages"><button id="tabPicks" role="tab" aria-selected="true" class="active" data-tab="picks">Top Picks <span id="pickCount" class="tab-count">0</span></button><button id="tabExplore" role="tab" aria-selected="false" data-tab="explore">Player Research</button><a href="/classic">Full Analytics ↗</a></div>
+  <section id="picksPage" class="page active">
+   <div class="status-card" id="feedCard"><div class="feed-left"><span class="feed-icon">◉</span><div><strong id="feedTitle">Checking your prop board…</strong><small id="feedDetail">Looking for a connected NBA standard-line feed</small></div></div><div class="status-actions"><button class="button secondary" id="refreshBtn" type="button">↻ Refresh</button><label class="button primary upload" for="csvInput">↑ Import CSV</label><input id="csvInput" class="sr-only" type="file" accept=".csv,text/csv,.txt"></div></div>
+   <div id="setupNote" class="setup-note" hidden><strong>Want your PrizePicks lines automatically?</strong><p>Connect a permitted independent data API or publish your existing Google Sheet as CSV. Until then, use <b>Import CSV</b> from your daily prop board. Live lines require the source to be configured; this site does not scrape PrizePicks.</p><details><summary>How to connect automatic lines</summary><p>In Render → nba-shotzone-scout → Environment, set <code>PRIZEPICKS_API_KEY</code> to a key from an independent licensed feed such as <a href="https://prizepicksapi.com/docs" target="_blank" rel="noopener noreferrer">prizepicksapi.com</a>. Or, after choosing to publish the board, set <code>PROPS_CSV_URL</code> to its public Google Sheets CSV URL. Never paste API keys into this page.</p></details></div>
+   <div class="section-heading"><div><div class="overline">TODAY'S SHORTLIST</div><h2>Top 6 research picks <span id="listTag" class="sub-tag">Preliminary</span></h2><p>Ranked against available data. Every pick still needs injury, lineup, minutes and price checks.</p></div><div class="sort-wrap"><select id="sideFilter" aria-label="Filter direction"><option value="ALL">More + Less</option><option value="MORE">More only</option><option value="LESS">Less only</option></select></div></div>
+   <div id="slateChips" class="slate-chips" role="group" aria-label="Filter today's games"></div>
+   <div id="pickSummary" class="summary-line" aria-live="polite">Loading NBA games and player history…</div>
+   <div id="picksGrid" class="picks-grid" aria-live="polite"><div class="empty-state"><div class="empty-icon">⌁</div><h3>Loading the research board</h3><p>We're checking the latest available game and prop data.</p></div></div>
+   <p class="footnote">Research scores are <b>not win probabilities</b>. A high score does not mean a profitable pick. Payout, line movement and independent minutes/injury projections remain mandatory final checks.</p>
+  </section>
+  <section id="explorePage" class="page" hidden>
+   <div class="section-heading"><div><div class="overline">PLAYER RESEARCH</div><h2>Explore any matchup</h2><p>Choose a player, enter the current line and see what supports or contradicts it.</p></div></div>
+   <div class="research-box">
+    <div class="input-grid"><div><label for="teamSelect">OFFENSE</label><select id="teamSelect"><option value="">Choose team</option></select></div><div><label for="playerSelect">PLAYER</label><select id="playerSelect"><option value="">Choose player</option></select></div><div><label for="defSelect">OPPONENT</label><select id="defSelect"><option value="">Choose opponent</option></select></div></div>
+    <div class="input-grid more"><div><label for="statSelect">PROP TYPE</label><select id="statSelect"><option value="PTS">Points</option><option value="REB">Rebounds</option><option value="AST">Assists</option><option value="3PM">3-pointers made</option><option value="PRA">Points + Rebounds + Assists</option><option value="RA">Rebounds + Assists</option><option value="PA">Points + Assists</option><option value="PR">Points + Rebounds</option><option value="FGA">Field goal attempts</option><option value="3PA">Three-point attempts</option><option value="FTM">Free throws made</option><option value="2PM">Two-pointers made</option></select></div><div><label for="lineInput">EXACT LINE</label><input id="lineInput" type="number" min="0" max="200" step="0.5" placeholder="e.g. 24.5"></div><div><label for="directionSelect">SIDE</label><select id="directionSelect"><option value="MORE">More</option><option value="LESS">Less</option></select></div></div>
+    <button id="researchBtn" class="button primary research-button" type="button">Analyze player <span aria-hidden="true">↗</span></button>
+   </div>
+   <div id="researchResult" class="research-output"><div class="empty-state"><div class="empty-icon">⌕</div><h3>Research a player</h3><p>You'll see the last 5, last 10, season record, minutes and shot-zone alignment.</p></div></div>
+  </section>
+  <section class="bottom-panel"><span class="overline">HOW THIS WORKS</span><div class="steps"><div><b>01</b><strong>Check the line</strong><small>Exact standard PrizePicks number and freshness</small></div><div><b>02</b><strong>Confirm opportunity</strong><small>Minutes, attempts, playstyle and matchup</small></div><div><b>03</b><strong>Run final veto</strong><small>Injuries, role, independent projections and price</small></div></div><div class="bottom-text">Built from the shot-chart, opportunity and game-context approaches we studied. Only observed NBA box-score data is automatically scored; unsupported tracking and injury signals are openly labeled as pending checks.</div></section>
+ </main>
+ <footer><span>© NBA Scout · For research, not guaranteed outcomes</span><a href="/classic">Advanced dashboard ↗</a></footer>
 </div>
-<div class="main"><div class="card"><div class="charthead"><h2 id="courtTitle">Player vs. Defense court map</h2><span class="status" id="snapshot"></span></div><div class="courtwrap"><svg class="court" viewBox="0 0 840 590" preserveAspectRatio="xMidYMid meet" aria-label="Six-zone defensive shot map" role="img"><rect x="1" y="1" width="838" height="588" rx="5" fill="#a32b3a" stroke="#f4f7fb" stroke-width="3"/><path class="zone" id="zone-above" d="M 1,1 H 839 V 589 H 1 Z"/><path class="zone" id="zone-left" d="M 1,1 H 107 V 203 H 1 Z"/><path class="zone" id="zone-right" d="M 733,1 H 839 V 203 H 733 Z"/><path class="zone" id="zone-mid" d="M 107,1 H 733 V 203 C 673,395 563,441 420,443 C 277,441 167,395 107,203 Z"/><path class="zone" id="zone-paint" d="M 315,1 H 525 V 310 H 315 Z"/><path class="zone" id="zone-rim" d="M 355,1 H 485 V 60 A 65,65 0 0 1 355,60 Z"/><path class="line" d="M 385,72 H 455 M 420,72 V 90 M 107,1 V 203 C 167,395 277,441 420,443 C 563,441 673,395 733,203 V 1 M 315,1 V 310 H 525 V 1"/></svg>
-<div class="plate left" data-key="left"></div><div class="plate rim" data-key="rim"></div><div class="plate right" data-key="right"></div><div class="plate paint" data-key="paint"></div><div class="plate mid" data-key="mid"></div><div class="plate above" data-key="above"></div></div><div class="legend"><span><span class="swatch" style="background:#3e9baf"></span>Less favorable overlap</span><span><span class="swatch" style="background:#516b7b"></span>Mixed / insufficient sample</span><span><span class="swatch" style="background:#d94b62"></span>More favorable overlap</span></div><p class="mini" id="legendsub">Court colors are directional comparisons, not calculated hit probabilities.</p></div>
-<div class="card"><h2 id="detailTitle">Defensive + shooter profile</h2><div class="overview"><div class="kpi"><span class="lbl">SHOOTER FGA, SEASON</span><span class="num" id="playerFga">—</span></div><div class="kpi"><span class="lbl">FG ATTEMPTS / GAME*</span><span class="num" id="playerRate">—</span></div><div class="kpi"><span class="lbl">DEFENSE OPP FGA</span><span class="num" id="defFga">—</span></div><div class="kpi"><span class="lbl">PRIMARY SHOT ZONE</span><span class="num" style="font-size:14px" id="topZone">—</span></div></div>
-<div class="inset-card"><div class="signal-head"><h3>Six-zone matchup table</h3><span class="small">Defensive #30 = most permissive</span></div><div class="zones-table-scroll"><table class="mini-table"><thead><tr><th>ZONE</th><th>PLAYER<br>FGA</th><th>PLAYER<br>FG%</th><th>DEF.<br>SHOT %</th><th>DEF.<br>OPP FG%</th><th>DEF.<br>RANK¹</th></tr></thead><tbody id="zoneCompare"></tbody></table></div></div>
-<div class="inset-card" style="margin-top:12px"><h3>What actually overlaps?</h3><div id="matchupReading" class="riskline"></div></div><p class="mini"><b>¹Defense rank:</b> by shot frequency; #1 is smallest share of opponent shots in that zone, #30 largest. FG% defense ranks are available in defense mode.<br><b>*Per-game:</b> displayed only when games played is available.</p></div></div>
-
-<div class="grade-layout" id="matchGrades">
- <div class="card grade-card">
-  <div class="signal-head"><div><h2>Player vs. Defense · Matchup Grade</h2><p class="sub">Shot-location alignment score, not a prop hit probability.</p></div><span class="sourcechip" id="gradeStatus">Awaiting player</span></div>
-  <div class="grade-header"><div class="grade-number" id="gradeNumber">—</div><div class="grade-text"><b id="gradeLetter">Not graded</b><p id="gradePlayerLabel">Select a shooter</p><span id="gradeConfidence">Confidence: —</span></div></div>
-  <div class="grade-parts"><div><span>SHOT-VOLUME ALIGNMENT</span><strong id="gradeVolume">—</strong><div class="track"><i id="volumeTrack"></i></div></div><div><span>OPPONENT FG% ALIGNMENT</span><strong id="gradeAccuracy">—</strong><div class="track"><i id="accuracyTrack"></i></div></div></div>
-  <div class="grade-drivers" id="gradeDrivers">Grade drivers appear after a valid player profile loads.</div>
-  <p class="small">Grade uses 68% defensive shot-frequency overlap and 32% opponent FG% overlap, each weighted by the player’s own shot share. Team-wide location data is not position-specific defensive tracking. Requires role/minutes/injury and exact market-line checks before a prop decision.</p>
- </div>
- <div class="card">
-  <div class="signal-head"><div><h2>Where does the grade come from?</h2><p class="sub">Positive values favor the shooter’s typical shot distribution.</p></div></div>
-  <div id="gradeZoneDetail" class="grade-zone-detail">Choose a player with measured shot attempts to see zone contributions.</div>
-  <div id="gradeCaveat" class="muted-panel" style="margin-top:14px">The score compares tendencies, not predicted field goals.</div>
- </div>
-</div>
-
-<section class="card v13-panel" id="projectionSection" style="margin-top:18px" aria-label="Zone attempt projection and veto checks">
-  <div class="signal-head"><div><div class="slate-kicker">NEW · PROJECTED OPPORTUNITY LAB</div><h2>Projected zone FGA + three independent grades</h2><p class="sub">Historical shooting tendency × recent five-game opportunity × opponent shot share. Heuristic estimates, not betting probabilities.</p></div><span class="sourcechip" id="forecastSource">Select a matchup</span></div>
-  <div class="forecast-controls">
-    <label class="forecast-control">Independent projected minutes (optional)<input id="expectedMinutes" type="number" inputmode="decimal" min="1" max="48" step="0.5" placeholder="Recent avg" aria-label="Projected minutes"/></label>
-    <label class="verify-toggle"><input id="roleVerified" type="checkbox"/> I've independently checked this player's role, injuries and expected minutes for this game</label>
-  </div>
-  <div class="v13-scores">
-   <div><span>OPPORTUNITY GRADE</span><strong id="opportunityScore">—</strong><small>Defensive shot frequency</small></div>
-   <div><span>EFFICIENCY GRADE</span><strong id="efficiencyScore">—</strong><small>Opponent FG% by zone</small></div>
-   <div><span>DATA CONFIDENCE</span><strong id="confidenceScore">—</strong><small>Historical sample and minutes coverage</small></div>
-  </div>
-  <div class="v13-prediction"><div><span>TOTAL PROJECTED FGA</span><strong id="projectedTotal">—</strong></div><div><span>PRIMARY-ZONE PROJECTED FGA</span><strong id="projectedPrimary">—</strong></div><div><span>MINUTES ASSUMPTION</span><strong id="projectedMinutes">—</strong></div></div>
-  <div id="vetoResult" class="veto-neutral" role="status" aria-live="polite">Awaiting player forecast.</div>
-  <div class="table-scroll"><table class="v13-table"><thead><tr><th>ZONE</th><th>SEASON / GAME</th><th>LAST 5 / GAME</th><th>PROJECTED FGA</th><th>DEF. FG% GAP</th></tr></thead><tbody id="forecastRows"><tr><td colspan="5">Select an eligible player.</td></tr></tbody></table></div>
-  <p class="mini" id="forecastNote">A scouting-clear status is never a verified prop recommendation. Injury, lineups, independent minutes, exact market lines, and odds still require RFPP review.</p>
-</section>
-
-<section class="card v13-panel research-panel" id="researchDesk" style="margin-top:18px" aria-label="Player prop research and watchlist">
- <div class="signal-head"><div><div class="slate-kicker">NEW · RESEARCH DESK v1.4</div><h2>Research players, not just defensive matchups</h2><p class="sub">TWO6ZERO × Cheese Picks × Final Round approach: where shots come from, who gets opportunities, how a line compares with prior games, and which pre-tipoff checks remain.</p></div><span class="sourcechip">Scouting · Not guaranteed picks</span></div>
- <div class="research-controls">
-  <label>Player prop<select id="researchStat"><option value="PTS">Points</option><option value="REB">Rebounds</option><option value="AST">Assists</option><option value="3PM">Three-pointers made</option><option value="PRA">Points + rebounds + assists</option><option value="RA">Rebounds + assists</option><option value="PA">Points + assists</option><option value="PR">Points + rebounds</option><option value="FGA">Field-goal attempts</option><option value="3PA">Three-point attempts</option><option value="FTM">Free throws made</option><option value="2PM">Two-pointers made</option></select></label>
-  <label>Side<select id="researchSide"><option value="MORE">MORE</option><option value="LESS">LESS</option></select></label>
-  <label>Exact PrizePicks line<input type="number" id="researchLine" inputmode="decimal" min="0" max="300" step="0.5" placeholder="e.g. 8.5"/></label>
-  <label>Sportsbook odds (optional)<input type="number" id="researchOdds" inputmode="numeric" step="1" placeholder="e.g. -115"/></label>
- </div>
- <div id="researchSummary" class="muted-panel" aria-live="polite">Select a player and enter an exact line to begin researching.</div>
- <div class="research-kpis"><div><span>Season average</span><strong id="researchSeason">—</strong></div><div><span>Last 5 average</span><strong id="researchL5">—</strong></div><div><span>Last 10 average</span><strong id="researchL10">—</strong></div><div><span>Minutes-adjusted baseline</span><strong id="researchProjection">—</strong></div></div>
- <div class="research-split">
-  <div><h3>History vs your exact line</h3><div id="researchRates" class="table-scroll"></div><p class="mini">True wins, pushes, and losses are counted separately. H2H uses only tracked 2026–27 games against the selected defense; missing earlier seasons are never implied.</p></div>
-  <div><h3>Underlying opportunities</h3><div id="researchOpportunity" class="research-evidence"></div><p class="mini">NBA rebound chances, potential assists and play types require additional verified tracking. Box-score assists/rebounds are not substitutes.</p></div>
- </div>
- <details class="research-detail"><summary>Game-by-game recent form (last 10)</summary><div class="table-scroll" id="researchRecent"></div></details>
- <div class="research-checks">
-  <h3>Pregame verification & veto checklist</h3><p class="sub">Items you check are user assertions, not automatically verified sources. A cleared checklist means “ready for a second independent review,” not an estimated edge or profitable play.</p>
-  <div class="research-controls">
-   <label>Injury / active status<select id="researchInjury"><option value="unknown">Not verified</option><option value="active">Confirmed active / expected normal role</option><option value="questionable">Questionable or minutes uncertain</option><option value="out">Out / DNP</option></select></label>
-   <label>Stat-specific DvP rank (1 hardest, 30 easiest)<input id="researchDvp" type="number" min="1" max="30" step="1" inputmode="numeric" placeholder="Source-verified rank"/></label>
-   <label>Opponent spread (optional)<input id="researchSpread" type="number" min="-40" max="40" step="0.5" placeholder="-11.5"/></label>
-   <label>Opponent pace context<select id="researchPace"><option value="unknown">Not verified</option><option value="fast">High possessions</option><option value="neutral">Typical possessions</option><option value="slow">Low possessions</option></select></label>
-   <label>Primary play type<select id="researchPlayType"><option value="unknown">Not tracked</option><option value="pick-and-roll ballhandler">Pick-and-roll handler</option><option value="pick-and-roll roll man">Pick-and-roll roll man</option><option value="post-up">Post-up</option><option value="spot-up">Spot-up</option><option value="putback">Putbacks</option><option value="transition">Transition</option></select></label>
-   <label>Opponent play-type allowance rank<input id="researchPlayRank" type="number" min="1" max="30" placeholder="1 toughest · 30 easiest"/></label>
-   <label>Tracking opportunities (optional)<input id="researchTracking" type="number" min="0" max="100" step="0.5" placeholder="Potential AST or REB chances"/></label>
-   <label>Tracking source / timestamp<input id="researchTrackingSource" type="text" maxlength="180" placeholder="e.g. NBA tracking, observed 3 PM"/></label>
-  </div>
-  <div class="research-checkboxes">
-   <label><input type="checkbox" id="researchLineChecked"/> Exact line + payout rechecked</label>
-   <label><input type="checkbox" id="researchRoleChecked"/> RotoWire/lineup + minutes independently checked</label>
-   <label><input type="checkbox" id="researchDvpChecked"/> DvP / shot-zone / role matchup corroborated</label>
-   <label><input type="checkbox" id="researchUpstreamChecked"/> Upstream opportunity metric corroborated</label>
-   <label><input type="checkbox" id="researchProjectionChecked"/> Second independent projection agrees</label>
-   <label><input type="checkbox" id="researchMarketChecked"/> Market odds / line movement checked</label>
-   <label><input type="checkbox" id="researchVetoChecked"/> Independent second-pass veto completed</label>
-  </div>
-  <div id="researchVeto" class="veto-neutral" role="status" aria-live="polite">Current line, injuries, opportunity, and projections must be checked before a bet decision.</div>
-  <label class="research-notes">Evidence notes / sources<textarea id="researchNotes" rows="2" maxlength="1200" placeholder="Why does the volume, injury role and opponent matchup support this side? Include source dates."></textarea></label>
-  <div class="matchbar"><button class="pillbtn primary" id="researchAdd" type="button">Add to research watchlist</button><button class="pillbtn" id="researchCopy" type="button">Copy evidence report</button><a class="pillbtn research-jump" href="#rankingSection">Review Top 6 / Worst 6</a></div>
- </div>
- <div class="watchlist-head"><h3>My research watchlist</h3><div class="matchbar"><button class="pillbtn" id="researchExport" type="button">Export CSV</button><button class="pillbtn" id="researchClear" type="button">Clear watchlist</button></div></div>
- <div class="watchlist-items" id="researchWatchlist"><div class="muted-panel">Nothing saved yet. Start with a player and exact line. This watchlist stays in this browser only.</div></div>
- <p class="mini">Research inputs and saved watchlist live in this browser, not a secure account. Do not enter passwords or paid-site credentials. Odds and external projection data are never scraped from your subscriptions by this feature. This is a research workflow; it cannot establish a true betting edge without calibrated outcome probabilities and the actual payout structure.</p>
-</section>
-
-<div class="card rankings-card" id="rankingSection" style="margin-top:18px">
-  <div class="signal-head"><div><h2>Qualified Player Matchup Rankings</h2><p class="sub">Ranked by favorable or restrictive zone alignment, not betting probability.</p></div><div class="scope-switch"><button class="pillbtn primary" id="scopeToday">Today’s games</button><button class="pillbtn" id="scopeAll">All team pairings</button></div></div>
-  <div class="rank-audit" aria-live="polite">
-  <div class="rank-audit-title" id="rankAuditTitle">Checking player coverage…</div>
-  <div class="rank-audit-counters">
-    <div><span id="auditEligible">—</span><small>GRADE ELIGIBLE</small></div>
-    <div><span id="auditLowSample">—</span><small>LOW SAMPLE</small></div>
-    <div><span id="auditMissing">—</span><small>MISSING PROFILE</small></div>
-    <div><span id="auditTotal">—</span><small>ROSTER ENTRIES</small></div>
-  </div>
-  <div class="rank-coverage-track"><div id="rankCoverageFill"></div></div>
-  <p class="small" id="rankCoverage">Loading qualified players and today’s schedule…</p>
-  <div class="rank-audit-warning" id="rankAuditWarning">Rankings only include eligible players; missing players are not treated as unfavorable.</div>
-</div>
-  <div class="rank-grids"><div><h3 class="positive-title" id="topSixTitle">Top 6 among qualified players</h3><div id="topSix" class="rank-items"></div></div><div><h3 class="negative-title" id="worstSixTitle">Worst 6 among qualified players</h3><div id="worstSix" class="rank-items"></div></div></div>
-  <p class="mini">Eligibility: at least four games and 40 total classified shot attempts. Missing player stats, uncertain lineups, and incomplete slates are never treated as a negative matchup. A grade is a screening signal, not a win-rate estimate.</p>
-</div>
-
-<section class="card v13-panel" id="postgameSection" style="margin-top:18px" aria-label="Historical postgame matchup accuracy">
- <div class="signal-head"><div><div class="slate-kicker">NEW · POSTGAME ACCURACY TRACKER</div><h2>Test the matchup model against completed games</h2><p class="sub">Strict time-based backtest: pregame grades and attempts are reconstructed using only games completed BEFORE the selected date. No future data enters a forecast.</p></div><div class="forecast-controls"><input type="date" id="auditDate" min="2026-10-20" max="2027-04-11" aria-label="Postgame audit date"/><button class="pillbtn primary" id="auditRun">Analyze date</button><button class="pillbtn" id="auditCsv" disabled>Export CSV</button></div></div>
- <div id="auditMessage" class="muted-panel" aria-live="polite">Load a date to audit every qualified player against his observed target-zone attempts.</div>
- <div class="v13-scores" id="auditStats" hidden><div><span>PLAYERS GRADED</span><strong id="auditPlayers">—</strong><small>Played and met pregame minimum</small></div><div><span>ZONE FGA MEAN ABSOLUTE ERROR</span><strong id="auditMae">—</strong><small>Lower is better</small></div><div><span>TOP 6 BASELINE CLEARANCE</span><strong id="auditTopRate">—</strong><small>Observed target-zone FGA ≥ pregame average</small></div></div>
- <div class="v13-audit-grids"><div><h3 class="positive-title">Top 6 graded matchups</h3><div id="auditTopTable" class="table-scroll"></div></div><div><h3 class="negative-title">Worst 6 graded matchups</h3><div id="auditWorstTable" class="table-scroll"></div></div></div>
- <p class="mini">Grading is descriptive and retrospective. The live board may differ from the reconstructed backtest if source coverage or rosters changed; a saved pregame board is labeled separately. A baseline clearance is NOT a PrizePicks win or return on investment. Render free hosting may lose cache history after restart.</p>
-</section>
-
-<div class="card" style="margin-top:18px"><div class="signal-head"><h2>Server refresh & data integrity</h2><span id="syncHealth" class="sourcechip">Checking server…</span></div>
- <p class="sub">The backend checks ESPN game data and builds player profiles using reconstructed shot zones. It now identifies excluded heaves before checking shot coordinates, tolerates only tiny documented box-score discrepancies, and labels incomplete game coverage. The NBA snapshot remains the fallback until enough games are verified.</p>
- <div class="matchbar"><button class="pillbtn primary" id="refresh">Refresh season data on server</button><button class="pillbtn" id="reload">Reload app data</button><span class="sourcechip" id="refreshState">Snapshot available</span></div>
- <div class="muted-panel" role="status" id="statusBar" aria-live="polite">Checking for new games.</div><p class="small">Automatic checks happen when the server is running; if a free host sleeps, it will check again when reopened. Cache persistence on free hosting is not guaranteed. The source, as-of date, player coverage, rejected game count and refresh status are displayed. Player coverage is roster-based, not a confirmation of availability or starting roles.</p>
-</div>
-<div class="card" style="margin-top:18px"><div class="signal-head"><h2>Compare every NBA defense</h2><div class="selector-row"><label class="control" style="min-width:155px"><span class="small">COMPARE WITH</span><select id="compare"><option value="">None</option></select></label><button class="pillbtn" id="downloadcsv">Download defense ranking CSV</button></div></div><p class="sub">Click a team to load it on the court. Switch court view to shot frequency or opponent FG% to see the 30-team defensive rankings.</p><div class="compare" id="compareBox"></div><div class="table-scroll" style="margin-top:12px"><table><thead><tr id="columns"></tr></thead><tbody id="board"></tbody></table></div></div>
-<div class="footnote"><p><b>What these grades measure:</b> A player’s six-zone FGA distribution against the defense’s six-zone shot frequency and opponent FG%. This is a descriptive matchup screening grade, not a statistical prediction of a win or a betting edge. Source availability and approximate zone definitions may limit reliability.</p><p><b>Sources:</b> <a href="https://www.nba.com/stats/teams/opponent-shooting?DistanceRange=By+Zone" target="_blank" rel="noopener">NBA official defensive zones</a>, <a href="https://www.nba.com/stats/players/shooting?DistanceRange=By+Zone" target="_blank" rel="noopener">NBA official player zones</a>, <a href="https://www.espn.com/nba/scoreboard" target="_blank" rel="noopener">ESPN game data</a>. ESPN-derived shot coordinates use reconstructed zones and are separately labeled.</p></div></div>
-<script src="/app.js?v=1.4" defer></script></body></html>
+<script type="module" src="/clean.js?v=1.5"></script>
+</body></html>

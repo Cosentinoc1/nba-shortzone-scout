@@ -8,6 +8,8 @@ import {scoreboardGames,validSlateDay} from './lib/schedule.mjs';
 import {zoneForecast} from './lib/projection.mjs';
 import {auditDay} from './lib/audit.mjs';
 import {researchPlayer,STATS} from './lib/research.mjs';
+import {normalizeRows,parseCsv,rankBoard} from './lib/props.mjs';
+import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
 const ROOT=path.dirname(fileURLToPath(import.meta.url));
 const snapshotDefense=JSON.parse(await readFile(path.join(ROOT,'data/defense.json'),'utf8'));
 const snapshotPlayers=JSON.parse(await readFile(path.join(ROOT,'data/players.json'),'utf8'));
@@ -127,7 +129,7 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
    await saveCache();
  }catch(e){error=e.message;refreshStage='Retained validated snapshot';console.warn('Refresh:',e.message)}finally{busy=false}
 }
-function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.4.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
+function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'1.5.0',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
 function json(res,obj,statusCode=200){res.writeHead(statusCode,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj))}
 function requireTeam(code){const t=normalizeTeam(code);return rosters[t]?t:null}
 async function handler(req,res){
@@ -136,6 +138,28 @@ async function handler(req,res){
   if(pathname==='/api/health')return json(res,{ok:true,source,date:localDate()});
   if(pathname==='/api/status')return json(res,status());
   if(pathname==='/api/bootstrap')return json(res,{defense,players,rosters,schedule,status:status()});
+  if(pathname==='/api/props-feed'){
+   const feed=await loadPropsFeed();return json(res,feedStatusOnly(feed));
+  }
+  if(pathname==='/api/picks'&&req.method==='GET'){
+   const day=u.searchParams.get('date')||localDate();
+   if(!validSlateDay(day))return json(res,{error:'Invalid NBA regular season date'},400);
+   const feed=await loadPropsFeed();
+   let slate=[];try{slate=await getSchedule(false,day)}catch(e){return json(res,{feed:feedStatusOnly(feed),error:'NBA schedule unavailable',details:e.message},503)}
+   const result=rankBoard({rows:feed.rows,schedule:slate,day,gameCache,rosters,players,defense});
+   return json(res,{...result,feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
+  }
+  if(pathname==='/api/picks/import'&&req.method==='POST'){
+   // Untrusted user uploads only affect the current response. No server-side writes.
+   let body='';for await(const chunk of req){body+=chunk;if(body.length>380000)return json(res,{error:'File is too large; upload up to 380 KB of NBA standard props'},413)}
+   let input;try{input=JSON.parse(body)}catch{return json(res,{error:'Invalid JSON payload'},400)}
+   const day=input.date||localDate();if(!validSlateDay(day))return json(res,{error:'Invalid NBA regular season date'},400);
+   const supplied=typeof input.csv==='string'?parseCsv(input.csv):(Array.isArray(input.rows)?input.rows:[]);
+   if(supplied.length>3000)return json(res,{error:'Maximum 3,000 prop rows per upload'},413);
+   let slate=[];try{slate=await getSchedule(false,day)}catch(e){return json(res,{error:'NBA schedule unavailable',details:e.message},503)}
+   const result=rankBoard({rows:supplied,schedule:slate,day,gameCache,rosters,players,defense});
+   return json(res,{...result,feed:{configured:false,source:'Uploaded file · local browser session',count:result.boardCount,status:'uploaded'},games:slate,historyGames:Object.keys(gameCache).length});
+  }
   if(pathname==='/api/research'){
    const offense=requireTeam(u.searchParams.get('offense')),opponent=requireTeam(u.searchParams.get('defense'));
    const id=u.searchParams.get('playerId'),stat=u.searchParams.get('stat')||'PTS',side=u.searchParams.get('side')||'MORE';
@@ -206,11 +230,11 @@ async function handler(req,res){
    fullRefresh().catch(e=>console.warn(e));return json(res,{accepted:true,status:status()},202);
   }
   if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
-  const files={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/styles.css':'styles.css'};
+  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css'};
   const name=files[pathname];if(!name)return json(res,{error:'Not found'},404);
   const dest=path.join(ROOT,'public',name);if(!existsSync(dest))return json(res,{error:'Not found'},404);
   const type=name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8';
-  res.writeHead(200,{'Content-Type':type,'Cache-Control':name==='index.html'?'no-cache':'public, max-age=300','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY'});createReadStream(dest).pipe(res);
+  res.writeHead(200,{'Content-Type':type,'Cache-Control':name.endsWith('.html')?'no-cache':'public, max-age=300','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY'});createReadStream(dest).pipe(res);
  }catch(e){console.error('Server error',e);json(res,{error:'Server error',detail:e.message},500)}
 }
 const server=http.createServer(handler);server.listen(PORT,'0.0.0.0',()=>console.log(`NBA Shot Zone Scout on :${PORT}`));
