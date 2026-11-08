@@ -20,6 +20,6 @@ test('grade board and full report state chosen side, reasons and missing checks'
  assert.match(report,/Why it scores this way:/);
 });
 test('site registers the updated version without changing workflow permissions',()=>{
- assert.match(read('server.mjs'),/version:'2\.5\.0'/);
- assert.equal(JSON.parse(read('package.json')).version,'2.5.0');
+ assert.match(read('server.mjs'),/version:'2\.6\.0'/);
+ assert.equal(JSON.parse(read('package.json')).version,'2.6.0');
 });

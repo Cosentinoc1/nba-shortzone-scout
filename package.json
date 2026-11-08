@@ -1,7 +1,7 @@
 {
   "name": "nba-zone-matchup-scout",
-  "version": "2.5.0",
-  "description": "NBA Scout v2.0: evidence-gated Top 10 research and RotoWire projections",
+  "version": "2.6.0",
+  "description": "NBA Scout v2.6: risk-gated Top 10 research and RotoWire projections",
   "private": true,
   "type": "module",
   "engines": {
@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node server.mjs",
+    "pretest": "python3 PATCH_SCOUT_25.py",
     "test": "node --test test/*.test.mjs",
     "dev": "node --watch server.mjs"
   },

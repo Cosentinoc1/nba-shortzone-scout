@@ -85,3 +85,31 @@ test('volatile recent minutes are a clear hold, not a bonus from a high median',
  const z=evaluate(row({v2History:{boxscoreGames:10,recent:volatile}}));
  assert.equal(z.tier,'HOLD');assert.ok(z.blockers.some(x=>/minutes distribution/.test(x)));
 });
+
+test('low-minute MORE is held rather than promoted on an attractive projection gap',()=>{
+ const z=evaluate(row(),{rotowire:{...rotowire,projectedMinutes:22,projectedStat:26}});
+ assert.equal(z.tier,'HOLD');assert.ok(z.score<=54);assert.ok(z.blockers.some(x=>/Low-minute MORE/.test(x)));
+});
+test('23-25-minute combo MORE is held without exceptional corroboration',()=>{
+ const data=recent.map(x=>({...x,stat:x.pts+x.reb+x.ast}));
+ const z=evaluate(row({stat:'PRA',line:25,v2History:{boxscoreGames:10,recent:data}}),{rotowire:{...rotowire,projectedMinutes:24,projectedStat:37}});
+ assert.equal(z.tier,'HOLD');assert.ok(z.blockers.some(x=>/Fragile MORE/.test(x)));
+});
+test('LESS upper-tail breakout risk overrides a mildly favorable forecast',()=>{
+ const vals=[13,14,15,16,15,14,31,30,32,29];
+ const data=vals.map(v=>({stat:v,pts:v,minutes:31,fga:16,fta:4,tpa:5}));
+ const z=evaluate(row({side:'LESS',line:19.5,v2History:{boxscoreGames:10,recent:data}}),{rotowire:{...rotowire,projectedStat:17,projectedMinutes:31},defenseGrade:{...d,score:20,lessScore:80}});
+ assert.equal(z.tier,'HOLD');assert.equal(z.underFragile,true);assert.ok(z.score<=54);assert.ok(z.blockers.some(x=>/Fragile LESS/.test(x)));assert.ok(z.hurts.some(x=>/upper quartile/.test(x)));
+});
+test('missing lineup and official injury review cap grade even if signals look positive',()=>{
+ const z=evaluate(row({lineupStatus:'expected',injuryStatus:null}));
+ assert.ok(z.score<=62);assert.notEqual(z.tier,'STRONG');assert.equal(z.entryReady,false);
+});
+test('without a matched independent projection the research grade cannot masquerade as strong',()=>{
+ const z=evaluate(row(),{rotowire:null});assert.ok(z.score<=57);assert.notEqual(z.tier,'STRONG');
+});
+test('LESS with stable distribution and volume can remain STRONG, not a universal under veto',()=>{
+ const data=[14,15,16,13,15,14,16,13,14,15].map(v=>({stat:v,pts:v,minutes:25,fga:10,fta:3,tpa:4}));
+ const z=evaluate(row({side:'LESS',line:18.5,v2History:{boxscoreGames:10,recent:data}}),{rotowire:{...rotowire,projectedStat:15,projectedMinutes:26},defenseGrade:{...d,score:20,lessScore:80}});
+ assert.equal(z.tier,'STRONG');assert.equal(z.underFragile,false);
+});
