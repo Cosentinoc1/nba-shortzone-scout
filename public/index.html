@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout v2.6 · Explainable MORE / LESS Research</title><link rel="stylesheet" href="/clean.css?v=2.6"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout v2.6 · Explainable MORE / LESS Research</title><link rel="stylesheet" href="/clean.css?v=2.7"><link rel="stylesheet" href="/defense-zones.css?v=3.5"></head>
 <body>
 <div class="app">
  <header class="topbar">
@@ -8,10 +8,10 @@
  </header>
  <main>
   <section class="hero">
-   <div class="eyebrow"><span class="line-dot"></span> SMART NBA RESEARCH · RFPP 2.6</div>
+   <div class="eyebrow"><span class="line-dot"></span> SMART NBA RESEARCH · RFPP 2.7</div>
    <div class="hero-title"><div><h1>Better research.<br><span>Clearer decisions.</span></h1><p>Real prop lines, on-court opportunity and defensive matchups in one clean place. No guesswork disguised as certainty.</p></div><div class="date-wrap"><label for="dateInput">GAME DAY</label><input type="date" id="dateInput" min="2026-10-20" max="2027-04-11"></div></div>
   </section>
-  <div class="segmented" role="tablist" aria-label="Research pages"><button id="tabPicks" role="tab" aria-selected="true" class="active" data-tab="picks">Top 10 <span id="pickCount" class="tab-count">0</span></button><button id="tabGrades" role="tab" aria-selected="false" data-tab="grades">Grade Board</button><button id="tabLines" role="tab" aria-selected="false" data-tab="lines">All Lines</button><button id="tabExplore" role="tab" aria-selected="false" data-tab="explore">Player Research</button><a href="/classic">Full Analytics ↗</a></div>
+  <div class="segmented" role="tablist" aria-label="Research pages"><a href="/review.html" class="review-nav-link" style="border:1px solid #53638f;border-radius:10px;padding:9px 12px;white-space:nowrap">Performance Review</a><button id="tabPicks" role="tab" aria-selected="true" class="active" data-tab="picks">Top 10 <span id="pickCount" class="tab-count">0</span></button><button id="tabGrades" role="tab" aria-selected="false" data-tab="grades">Grade Board</button><button id="tabLines" role="tab" aria-selected="false" data-tab="lines">All Lines</button><button id="tabExplore" role="tab" aria-selected="false" data-tab="explore">Player Research</button><button id="tabZones" role="tab" aria-selected="false" data-tab="zones">Defense Zones</button><a href="/classic">Full Analytics ↗</a></div>
   <section id="picksPage" class="page active">
    <div class="status-card" id="feedCard"><div class="feed-left"><span class="feed-icon">◉</span><div><strong id="feedTitle">Checking your prop board…</strong><small id="feedDetail">Looking for a connected NBA standard-line feed</small></div></div><div class="status-actions"><button class="button secondary" id="refreshBtn" type="button">↻ Refresh</button><label class="button primary upload" for="csvInput">↑ Import CSV</label><input id="csvInput" class="sr-only" type="file" accept=".csv,text/csv,.txt"></div></div>
    <section class="roto-upload" aria-label="Daily RotoWire projections"><div class="roto-icon">RW</div><div class="roto-copy"><strong>Daily RotoWire projections</strong><small>Use your RotoWire Excel export to verify projected minutes and compare model stats to live lines. Private to this browser; update each game day.</small></div><div class="roto-actions"><label class="button primary upload" for="rtoInput">↑ Import RotoWire XLSX</label><input id="rtoInput" class="sr-only" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.csv,text/csv"><button id="rtoClear" class="button secondary" type="button">Clear</button></div></section><p class="roto-status" id="rtoStatus" aria-live="polite">Upload today's projections to check the minutes and projection gates.</p>
@@ -29,7 +29,7 @@
    <label>SEARCH PLAYER / TEAM<input type="search" id="gradeSearch" placeholder="e.g. Aaron Gordon, DEN" autocomplete="off"></label>
    <label>WHAT TO SHOW<select id="gradeDirection"><option value="BEST">Best-supported side per prop</option><option value="PROMISING">Strong research candidates</option><option value="RESEARCH">Strong + lean (actionable shortlist)</option><option value="ON_HOLD">Hold / Pass / Veto (why not)</option><option value="ALIGNED">Historical + RotoWire agree</option><option value="EXACT_DVP">Exact position matchup available</option><option value="ANY_DVP">All sourced defensive matchups</option><option value="ALL">All MORE & LESS directions</option><option value="MORE">MORE only</option><option value="LESS">LESS only</option></select></label>
    <label>STAT TYPE<select id="gradeStat"><option value="ALL">All supported stats</option><option value="PTS">Points</option><option value="REB">Rebounds</option><option value="AST">Assists</option><option value="3PM">Threes</option><option value="PRA">PRA</option><option value="PA">Points + Assists</option><option value="RA">Rebounds + Assists</option><option value="PR">Points + Rebounds</option><option value="FGA">Field-goal attempts</option><option value="3PA">Three-point attempts</option><option value="FTM">Free throws made</option><option value="2PM">Two-pointers made</option></select></label>
-   <label>SORT BY<select id="gradeSort"><option value="score">RFPP 2.6 research score (not win %)</option><option value="defense">Matchup vs defense</option><option value="opportunity">Recent opportunity</option><option value="baseline">Baseline vs line</option><option value="confidence">Data confidence</option><option value="context">Injury / game / role context</option><option value="projection">RotoWire model edge</option><option value="minutes">RotoWire projected minutes</option><option value="last10">Last 10 hit percentage</option><option value="margin">Baseline gap</option></select></label>
+   <label>SORT BY<select id="gradeSort"><option value="score">RFPP 2.7 research score (not win %)</option><option value="defense">Matchup vs defense</option><option value="opportunity">Recent opportunity</option><option value="baseline">Baseline vs line</option><option value="confidence">Data confidence</option><option value="context">Injury / game / role context</option><option value="projection">RotoWire model edge</option><option value="minutes">RotoWire projected minutes</option><option value="last10">Last 10 hit percentage</option><option value="margin">Baseline gap</option></select></label>
    <label class="grade-pass"><input type="checkbox" id="gradePass"> Include vetoed/PASS rows</label>
   </div>
   <div id="gradeSummary" class="summary-line">Loading all graded props…</div>
@@ -53,6 +53,16 @@
    </div>
    <div id="researchResult" class="research-output"><div class="empty-state"><div class="empty-icon">⌕</div><h3>Research a player</h3><p>You'll see the last 5, last 10, season record, minutes and shot-zone alignment.</p></div></div>
   </section>
+  <section id="zonesPage" class="page" hidden>
+   <div class="dz-heading"><div><div class="overline">DEFENSIVE ZONE WEAKNESSES</div><h2>Where opponents get their shots</h2><p>Choose a defensive team. Tap a zone to see opponent FGA, FG% allowed, and how both compare with the NBA average.</p></div></div>
+   <div class="dz-controls"><label for="dzTeam">DEFENDING TEAM<select id="dzTeam" aria-label="Select the NBA defending team"><option value="">Loading teams…</option></select></label><button id="dzRefresh" class="button secondary" type="button">↻ Refresh zones</button></div>
+   <div id="dzStatus" class="dz-status" role="status">Open this tab to load the latest zone data.</div>
+   <div class="dz-panel"><h3>Most permissive zones</h3><p class="dz-panel-note">These zones show noticeably higher opponent volume, shooting percentage, or both. Tap to inspect.</p><div id="dzWeaknesses" class="dz-weak-grid" aria-live="polite"></div></div>
+   <div class="dz-layout">
+    <div class="dz-panel"><h3 id="dzTitle">Opponent shooting map</h3><p class="dz-panel-note">Six zones — schematic view, not precise court boundaries.</p><div id="dzCourt" class="dz-court" role="group" aria-label="Selectable opponent shooting zones"></div><div id="dzHighlight" class="dz-focus" aria-live="polite">Choose a team and a zone.</div></div>
+    <div class="dz-panel"><h3>All six defensive zones</h3><p class="dz-panel-note">Raw FGA totals and opponent FG% this season. Red FG% difference means more accurate shooting than the league average.</p><div id="dzRows" class="dz-rows" aria-label="Shot zones, attempts and accuracy allowed"></div><div class="dz-guide"><strong>How to read it:</strong> FGA is the total shot attempts the defense allowed in that zone. FG% is the share opponents made. “FG% vs league” measures percentage-point difference in that same zone, not a predicted prop hit rate.</div><p class="dz-caveat" id="dzCaveat"></p></div>
+   </div>
+  </section>
   <section class="bottom-panel"><span class="overline">HOW THIS WORKS</span><div class="steps"><div><b>01</b><strong>Check the line</strong><small>Exact standard PrizePicks number and freshness</small></div><div><b>02</b><strong>Confirm opportunity</strong><small>Minutes, attempts, playstyle and matchup</small></div><div><b>03</b><strong>Run final veto</strong><small>Injuries, role, independent projections and price</small></div></div><div class="bottom-text">Built from the shot-chart, opportunity and game-context approaches we studied. Only observed NBA box-score data is automatically scored; unsupported tracking and injury signals are openly labeled as pending checks.</div></section>
  </main>
  <footer><span>© NBA Scout · For research, not guaranteed outcomes</span><a href="/classic">Advanced dashboard ↗</a></footer>
@@ -63,7 +73,7 @@
   <div id="insightBody" class="insight-body" aria-live="polite"><p>Loading verified sources…</p></div>
  </section>
 </div>
-<script type="module" src="/clean.js?v=2.6"></script>
+<script type="module" src="/clean.js?v=2.7"></script><script type="module" src="/defense-zones.mjs?v=3.5"></script>
 <script type="module" src="/rotowire-upload.js?v=2.0"></script>
-<script type="module" src="/insight-ui.js?v=2.6"></script>
+<script type="module" src="/insight-ui.js?v=2.7"></script>
 </body></html>
