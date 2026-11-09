@@ -8,6 +8,7 @@ import {scoreboardGames,validSlateDay} from './lib/schedule.mjs';
 import {zoneForecast} from './lib/projection.mjs';
 import {auditDay} from './lib/audit.mjs';
 import {priorGamesOnly,rankGameZoneOpportunities} from './lib/zone-opportunities.mjs';
+import {enrichBoardQuickReads} from './lib/quick-pick-explainer.mjs';
 import {researchPlayer,STATS} from './lib/research.mjs';
 import {normalizeRows,parseCsv,rankBoard} from './lib/props.mjs';
 import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
@@ -137,6 +138,23 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
 function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'2.7.1',researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
 function json(res,obj,statusCode=200){res.writeHead(statusCode,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj))}
 function requireTeam(code){const t=normalizeTeam(code);return rosters[t]?t:null}
+const quickZoneCache=new Map();
+function zoneReportForPicks(day,slate){
+ const prior=priorGamesOnly(gameCache,day);
+ if(prior.length<20)return null;
+ const latest=prior.at(-1)?.date||'',id=day+'|'+prior.length+'|'+latest;
+ const cached=quickZoneCache.get(id);if(cached)return cached;
+ const historical=aggregateGames(prior);
+ const report=rankGameZoneOpportunities({day,games:slate,playerProfiles:historical.players,
+    defense:historical.defense,historyGames:prior,rosters});
+ if(quickZoneCache.size>8)quickZoneCache.clear();quickZoneCache.set(id,report);
+ return report;
+}
+function quickExplain(board,ctx,slate,day){
+ try {return enrichBoardQuickReads(board,{context:ctx,rosters,games:slate,
+    zoneReport:zoneReportForPicks(day,slate),now:Date.now()});}
+ catch(e){console.warn('Quick-pick explanations unavailable:',e.message);return board;}
+}
 async function handler(req,res){
  const u=new URL(req.url,`http://${req.headers.host||'localhost'}`),pathname=u.pathname;
  try{
@@ -201,7 +219,7 @@ async function handler(req,res){
    let ctx={injuries:[],games:[],injuriesFetched:false,lineupsFetched:false};
    try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.sourceError=String(e.message||e)}
    const result=applyVerification({board:{...preliminary,games:slate},context:ctx,gameCache,rosters,defense,day,limit:10});
-   return json(res,{...result,feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
+   return json(res,{...quickExplain(result,ctx,slate,day),feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
   }
   if(pathname==='/api/picks/rotowire'&&req.method==='POST'){
    // Files are parsed client-side. Only compact user-entered projections are sent.
@@ -220,7 +238,7 @@ async function handler(req,res){
    try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.sourceError=String(e.message||e)}
    const verified=applyVerification({board:{...base,games:slate},context:ctx,gameCache,rosters,defense,day,limit:10,positionOverrides:projected});
    const result=applyRotoProjections(verified,projected,day,{limit:10,uploadedAt});
-   return json(res,{...result,feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
+   return json(res,{...quickExplain(result,ctx,slate,day),feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
   }
   if(pathname==='/api/picks/import'&&req.method==='POST'){
    // Untrusted user uploads only affect the current response. No server-side writes.
@@ -234,7 +252,7 @@ async function handler(req,res){
    let ctx={injuries:[],games:[],injuriesFetched:false,lineupsFetched:false};
    try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.sourceError=String(e.message||e)}
    const result=applyVerification({board:{...preliminary,games:slate},context:ctx,gameCache,rosters,defense,day,limit:10});
-   return json(res,{...result,feed:{configured:false,source:'Uploaded file · local browser session',count:result.boardCount,status:'uploaded'},games:slate,historyGames:Object.keys(gameCache).length});
+   return json(res,{...quickExplain(result,ctx,slate,day),feed:{configured:false,source:'Uploaded file · local browser session',count:result.boardCount,status:'uploaded'},games:slate,historyGames:Object.keys(gameCache).length});
   }
   if(pathname==='/api/research'){
    const offense=requireTeam(u.searchParams.get('offense')),opponent=requireTeam(u.searchParams.get('defense'));
@@ -306,7 +324,7 @@ async function handler(req,res){
    fullRefresh().catch(e=>console.warn(e));return json(res,{accepted:true,status:status()},202);
   }
   if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
-  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/rotowire-upload.js':'rotowire-upload.js','/insight-ui.js':'insight-ui.js','/defense-ui.mjs':'defense-ui.mjs','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css','/review.html':'review.html','/review/review.js':'review/review.js','/review/review.css':'review/review.css','/review/history.json':'review/history.json','/defense-zones.mjs':'defense-zones.mjs','/defense-zones.css':'defense-zones.css'};
+  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/rotowire-upload.js':'rotowire-upload.js','/insight-ui.js':'insight-ui.js','/defense-ui.mjs':'defense-ui.mjs','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css','/review.html':'review.html','/review/review.js':'review/review.js','/review/review.css':'review/review.css','/review/history.json':'review/history.json','/defense-zones.mjs':'defense-zones.mjs','/defense-zones.css':'defense-zones.css','/quick-picks.css':'quick-picks.css'};
   const zoneAssets={'/zone-metrics.mjs':'zone-metrics.mjs','/zone-opportunity-ui.mjs':'zone-opportunity-ui.mjs'};
   const name=files[pathname]||zoneAssets[pathname];if(!name)return json(res,{error:'Not found'},404);
   const dest=path.join(ROOT,'public',name);if(!existsSync(dest))return json(res,{error:'Not found'},404);

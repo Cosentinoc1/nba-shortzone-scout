@@ -27,6 +27,20 @@ function defenseText(d,side){if(!d?.available)return 'NOT VERIFIED';
  const pos=d.positionCandidates?.join('/')||d.position||'unknown';
  if(d.positionCandidates){const rng=d.range?.[side==='LESS'?'less':'more'];return side+' · '+pos+' EST. FANTASY POSITION'+(rng?' · '+rng.join('–')+'/100 range':'');}
  return side+' · '+pos+' · SOURCED EXACT POSITION';}
+function renderQuickScan(rows){
+ const escShort=x=>esc(String(x||'').slice(0,190));
+ return `<section class="qp-scan" aria-label="Top 10 quick scan"><div class="qp-scan-header"><div><span class="overline">60-SECOND PICK REVIEW</span><h3>See the reason before opening a player</h3><p>Ranked research, not bet-ready choices. Tap a row for minutes, injuries, zones and exact-line history.</p></div><span class="qp-counter">${rows.length} research candidates</span></div>
+ <div class="qp-scan-list">${rows.map((c,i)=>{const q=c.quickRead||{},h=c.hit10||{},n=(h.win??'—')+'/'+(h.sample??'—');return `<a href="#qp-card-${i}" class="qp-scan-row"><span class="qp-scan-rank">${i+1}</span><span class="qp-scan-person"><b>${escShort(c.player)}</b><small>${escShort(c.team)} vs ${escShort(c.opponent)} · ${escShort(c.side)} ${escShort(c.line)} ${escShort(c.stat)}</small></span><span class="qp-scan-right"><strong class="qp-mini qp-mini-${esc(q.quality||'watch')}">${escShort(q.status||c.researchRank?.tier||'CHECK')}</strong><small>${escShort(n)} L10 wins</small></span></a>`}).join('')}</div></section>`;
+}
+function renderQuickDecision(c){
+ const q=c.quickRead;
+ if(!q)return `<div class="qp-empty">Detailed opportunity explanations are temporarily unavailable. Use the sourced checks below before considering this line.</div>`;
+ const cls=['priority','lean','watch','hold'].includes(q.quality)?q.quality:'watch';
+ const item=f=>`<div class="qp-fact qp-fact-${esc(['support','conditional','veto','caution'].includes(f.strength)?f.strength:'neutral')}"><span class="qp-fact-label">${esc(f.label)}</span><p>${esc(f.detail)}</p><small>${esc(f.source)}</small></div>`;
+ return `<section class="qp-decision" aria-label="Fast decision evidence for ${esc(c.player)}"><div class="qp-decision-head"><span class="qp-verdict qp-verdict-${esc(cls)}">${esc(q.status)}</span><span class="qp-verdict-label">Evidence, not predicted hit %</span></div>
+ <p class="qp-one-line">${esc(q.oneLine)}</p><div class="qp-fact-grid">${(q.facts||[]).map(item).join('')}</div>
+ <details class="qp-risks"><summary>What could make this pick miss? <span>${(q.risks||[]).length} checks</span></summary><ul>${(q.risks||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></details></section>`;
+}
 function renderPicks(){
  const data=state.data;if(!data)return;
  const selected=effectiveCandidates();$('pickCount').textContent=selected.length;
@@ -45,7 +59,7 @@ function renderPicks(){
    }
   }return;
  }
- $('picksGrid').innerHTML=selected.map((c,i)=>{
+ $('picksGrid').innerHTML=renderQuickScan(selected)+selected.map((c,i)=>{
   const ev=c.evidence||{},match=c.defenseGrade||{},directMatch=c.matchupGrade||{},checks=c.sourceChecks||[];
   const defView=defenseView(match,c.side);
   const rec=c.recommendation||{},rr=c.researchRank||{},topWhy=rr.reasons?.slice(0,2)||rec.helps?.slice(0,2)||[],topRisk=rr.risks?.slice(0,1)||rec.hurts?.slice(0,1)||[];
@@ -53,12 +67,13 @@ function renderPicks(){
   const pending=checks.filter(x=>['pending','unverified','veto'].includes(x.state));
   const primary=checks.filter(x=>['observed','confirmed','expected','reported','proxy','partial'].includes(x.state)).slice(0,4);
   const mismatch=state.side==='WORST';
-  return `<article class="pick-card upgraded-card">
+  return `<article class="pick-card upgraded-card" id="qp-card-${i}">
   <div class="pick-top"><span class="rank">#${i+1} · ${mismatch?'TOUGH MATCHUP':'RFPP RESEARCH CANDIDATE'}</span><span class="grade">${esc(rr.score??rec.score??c.score)}<small>RFPP 2.7 SIGNAL SCORE · NOT WIN %</small></span></div>
   <h3 class="player-name">${esc(c.player)}</h3><div class="decision-banner decision-${esc(rr.tier==='PRIORITY'?'strong':rr.tier==='LEAN'?'lean':rr.tier==='WATCH'?'hold':'pass')}"><strong>${esc(rr.status||"NOT YET GRADED")}</strong><p>${esc(rr.summary||"Check full research before choosing a side.")}</p><small>Final veto: ${esc(rec.status||'Not approved')}</small></div><div class="matchup">${esc(c.team)} vs ${esc(c.opponent)} · ${esc(STAT[c.stat]||c.stat)}</div>
   <div class="pick-main"><div><span class="line-amount">${esc(c.line)}<span>${esc(STAT[c.stat]||c.stat)} · standard line</span></span></div>
   <div class="pick-side"><span class="side-pill ${esc(c.side)}">${esc(c.side)}</span><div class="stat-name">History ${fmt(c.projected)}${c.rotowire?.matched?' · RW '+fmt(c.rotowire.projectedStat):''}</div></div></div>
   <div class="microstats"><div><strong>${l10}</strong><small>L10 TRUE WINS</small></div><div><strong>${fmt(c.margin)}</strong><small>BASELINE MARGIN</small></div><div><strong>${fmt(c.rotowire?.matched?c.rotowire.projectedMinutes:c.minutes)}</strong><small>${c.rotowire?.matched?'RW PROJECTED MIN':'ACTUAL L5 MIN/G'}</small></div></div>
+  ${renderQuickDecision(c)}
   <div class="grade-band"><span class="matchup-grade matchup-${esc(defView.tone)}"><small>DEFENSE MATCHUP FOR ${esc(defView.side)}</small><span class="matchup-result"><b>${esc(defView.letter)}</b><strong>${esc(defView.scoreText)} · ${esc(defView.verdict)}</strong></span><small>${esc(defView.sourceLabel)}</small></span><span class="grade-status">${esc(rr.coverage||'LIMITED')} SOURCE COVERAGE · ${esc(rec.confidence||'FINAL CHECKS PENDING')}</span></div>
   <div class="tag-row"><span class="tag">${defView.available?'Matchup ' + esc(defView.scoreText)+' for '+esc(defView.side):'Matchup not available'}</span><span class="tag">Role: ${esc(c.lineupStatus||'unverified')}</span>${c.rotowire?.matched?'<span class="tag">RW margin '+esc(c.rotowire.modelGap)+' · '+esc(c.rotowire.minutesChangePct)+'% mins change</span>':''}<span class="tag warning">${pending.length} pending/veto checks</span></div>
   <div class="plain-why"><strong>WHY THIS SIDE?</strong><ul>${topWhy.map(x=>`<li>✓ ${esc(x)}</li>`).join("")||"<li>Research support still incomplete.</li>"}${topRisk.map(x=>`<li class="risk">! ${esc(x)}</li>`).join("")}</ul></div>
