@@ -7,6 +7,7 @@ import { aggregateGames, parseESPNGame, matchupGrade, rankMatchups, normalizeTea
 import {scoreboardGames,validSlateDay} from './lib/schedule.mjs';
 import {zoneForecast} from './lib/projection.mjs';
 import {auditDay} from './lib/audit.mjs';
+import {priorGamesOnly,rankGameZoneOpportunities} from './lib/zone-opportunities.mjs';
 import {researchPlayer,STATS} from './lib/research.mjs';
 import {normalizeRows,parseCsv,rankBoard} from './lib/props.mjs';
 import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
@@ -142,6 +143,23 @@ async function handler(req,res){
   if(pathname==='/api/health')return json(res,{ok:true,source,date:localDate()});
   if(pathname==='/api/status')return json(res,status());
   if(pathname==='/api/bootstrap')return json(res,{defense,players,rosters,schedule,status:status()});
+  if(pathname==='/api/zone-opportunities'&&req.method==='GET'){
+   const day=u.searchParams.get('date')||localDate();
+   if(!validSlateDay(day))return json(res,{error:'Select a valid 2026-27 NBA game date'},400);
+   let slate;
+   try{slate=await getSchedule(false,day)}catch(e){return json(res,{error:'NBA game schedule unavailable',detail:e.message},503)}
+   // Strictly PRE-slate history, including a Chicago-local cutoff for late UTC starts.
+   // This prevents same-day results from influencing the pregame ranking.
+   const prior=priorGamesOnly(gameCache,day);
+   if(prior.length<20)return json(res,{date:day,gameCount:slate.length,games:[],
+      error:'Insufficient previous regular-season games for a reliable zone matchup ranking',
+      historyCount:prior.length,source:'ESPN pregame box scores'},503);
+   const hist=aggregateGames(prior);
+   const result=rankGameZoneOpportunities({day,games:slate,playerProfiles:hist.players,
+      defense:hist.defense,historyGames:prior,rosters});
+   return json(res,{...result,historyCount:prior.length,modelVersion:'zone-fit-1.0',
+      sourceDataAsOf:hist.asof||null});
+  }
   if(pathname==='/api/props-feed'){
    const feed=await loadPropsFeed();return json(res,feedStatusOnly(feed));
   }
@@ -289,7 +307,8 @@ async function handler(req,res){
   }
   if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
   const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/rotowire-upload.js':'rotowire-upload.js','/insight-ui.js':'insight-ui.js','/defense-ui.mjs':'defense-ui.mjs','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css','/review.html':'review.html','/review/review.js':'review/review.js','/review/review.css':'review/review.css','/review/history.json':'review/history.json','/defense-zones.mjs':'defense-zones.mjs','/defense-zones.css':'defense-zones.css'};
-  const name=files[pathname];if(!name)return json(res,{error:'Not found'},404);
+  const zoneAssets={'/zone-metrics.mjs':'zone-metrics.mjs','/zone-opportunity-ui.mjs':'zone-opportunity-ui.mjs'};
+  const name=files[pathname]||zoneAssets[pathname];if(!name)return json(res,{error:'Not found'},404);
   const dest=path.join(ROOT,'public',name);if(!existsSync(dest))return json(res,{error:'Not found'},404);
   const type=name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':name.endsWith('.json')?'application/json; charset=utf-8':'text/javascript; charset=utf-8';
   res.writeHead(200,{'Content-Type':type,'Cache-Control':name.endsWith('.html')?'no-cache':'public, max-age=300','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY'});createReadStream(dest).pipe(res);

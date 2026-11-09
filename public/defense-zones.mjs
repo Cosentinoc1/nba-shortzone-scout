@@ -1,6 +1,7 @@
 /* NBA Scout Defensive Zone Explorer — observational, source-aware league comparisons.
  * Uses the same backend defense snapshot as the court matchup tool. No new provider.
  */
+import {zoneSignalGrade} from './zone-metrics.mjs';
 const ZONES = [
   {id:'rim',name:'Restricted area',short:'At rim'},
   {id:'paint',name:'Paint (non-RA)',short:'Paint'},
@@ -30,6 +31,7 @@ export function summarizeDefenseZones(defense, teamCode) {
     const leagueFg=asNumber(avg.fg),leagueShare=asNumber(avg.share);
     const fgDelta=fg!==null&&leagueFg!==null?fg-leagueFg:null;
     const volumeDelta=share!==null&&leagueShare!==null?share-leagueShare:null;
+    const grades=zoneSignalGrade({fga,totalFga:attempts,fg,share,leagueFg,leagueShare});
     const tiny = fga===null||fga<25;
     let flag='MIXED',tone='neutral',why='Mixed volume and accuracy';
     if(tiny){flag='SMALL SAMPLE';tone='caution';why='Not enough zone shots for a reliable label';}
@@ -42,7 +44,7 @@ export function summarizeDefenseZones(defense, teamCode) {
     }
     const strength = !tiny && fgDelta!==null&&volumeDelta!==null
       ? Math.max(0,fgDelta/.03)*.55 + Math.max(0,volumeDelta/.02)*.45 : 0;
-    return {id:z.id,name:z.name,short:z.short,fga,fgm,fg,share,leagueFg,leagueShare,fgDelta,volumeDelta,flag,tone,why,strength};
+    return {id:z.id,name:z.name,short:z.short,fga,fgm,fg,share,leagueFg,leagueShare,fgDelta,volumeDelta,flag,tone,why,strength,...grades};
   });
   return {
     code:team.code,name:team.name,totalFga:attempts,zones,
@@ -61,8 +63,8 @@ function rowItem(z){
  const on=z.id===selectedZone;
  return `<button type="button" class="dz-zone-row ${on?'is-selected':''}" data-zone="${escapeText(z.id)}" aria-pressed="${on}">
   <span class="dz-zone-name"><b>${escapeText(z.name)}</b><small>${escapeText(z.flag)}</small></span>
-  <span><b>${number(z.fga)}</b><small>FGA allowed</small></span>
-  <span><b>${pct(z.fg)}</b><small>FG% allowed</small></span>
+  <span><b>${number(z.fga)}</b><small>FGA allowed · volume grade ${z.volumeGrade??"—"}</small></span>
+  <span><b>${pct(z.fg)}</b><small>FG% allowed · accuracy grade ${z.efficiencyGrade??"—"}</small></span>
   <span class="dz-delta ${z.fgDelta!==null&&z.fgDelta>0?'dz-up':z.fgDelta!==null&&z.fgDelta<0?'dz-down':''}"><b>${pp(z.fgDelta)}</b><small>FG% vs league</small></span>
  </button>`;
 }
@@ -75,9 +77,9 @@ function render() {
  $('dzStatus').textContent=`${view.totalFga.toLocaleString('en-US')} total classified opponent FGA · ${cached?.status?.source||view.source||'Source pending'}${cached?.status?.dataAsOf?' · Through '+cached.status.dataAsOf:view.asof?' · Through '+view.asof:''}`;
  $('dzCourt').innerHTML=view.zones.map(z=>zoneItem(z,z.id===selectedZone)).join('');
  $('dzRows').innerHTML=view.zones.map(z=>rowItem(z)).join('');
- $('dzHighlight').innerHTML=`<div class="dz-active-badge dz-${active.tone}">${escapeText(active.flag)}</div><strong>${escapeText(active.name)}</strong><p>${escapeText(active.why)}.</p><div class="dz-focus-metrics"><span><b>${number(active.fga)}</b><small>FGA allowed (total)</small></span><span><b>${pct(active.share)}</b><small>Share of shots allowed</small></span><span><b>${pct(active.fg)}</b><small>FG% allowed</small></span><span><b>${pct(active.leagueFg)}</b><small>League FG%</small></span></div><p class="dz-compare">Volume vs league: <strong>${pp(active.volumeDelta)}</strong> · FG% vs league: <strong>${pp(active.fgDelta)}</strong></p>`;
+ $('dzHighlight').innerHTML=`<div class="dz-active-badge dz-${active.tone}">${escapeText(active.flag)}</div><strong>${escapeText(active.name)}</strong><p>${escapeText(active.why)}.</p><div class="dz-focus-metrics"><span><b>${number(active.fga)}</b><small>FGA allowed (total)</small></span><span><b>${pct(active.share)}</b><small>Share of shots allowed</small></span><span><b>${pct(active.fg)}</b><small>FG% allowed</small></span><span><b>${pct(active.leagueFg)}</b><small>League FG%</small></span></div><div class="dz-separate-grade"><div><strong>${active.volumeGrade??'—'}/100</strong><small>VOLUME ALLOWED GRADE</small><p>${escapeText(active.volumeLabel)} · ${pp(active.volumeDelta)} shot share vs league</p></div><div><strong>${active.efficiencyGrade??'—'}/100</strong><small>FG% ALLOWED GRADE</small><p>${escapeText(active.efficiencyLabel)} · ${pp(active.fgDelta)} FG% vs league</p></div></div><p class="dz-compare">50 is league neutral. Values above 50 are more permissive. FG% grades shrink small zone samples (${number(active.fga)} attempts); neither grade is a player's probability of scoring.</p>`;
  const lead=view.weaknesses.slice(0,3);
- $('dzWeaknesses').innerHTML=lead.length?lead.map((z,i)=>`<button class="dz-lead" type="button" data-zone="${escapeText(z.id)}"><small>${i+1} · ${escapeText(z.flag)}</small><strong>${escapeText(z.name)}</strong><span>${pct(z.fg)} FG% allowed · ${number(z.fga)} FGA · ${pp(z.fgDelta)} vs league</span></button>`).join(''):
+ $('dzWeaknesses').innerHTML=lead.length?lead.map((z,i)=>`<button class="dz-lead" type="button" data-zone="${escapeText(z.id)}"><small>${i+1} · ${escapeText(z.flag)}</small><strong>${escapeText(z.name)}</strong><span>${pct(z.fg)} FG% allowed · ${number(z.fga)} FGA · ${pp(z.fgDelta)} vs league</span><em>Volume grade ${z.volumeGrade??"—"} · FG% grade ${z.efficiencyGrade??"—"}</em></button>`).join(''):
   '<div class="dz-lead dz-no-lead">No clear weak spot by the current volume/FG% thresholds. Inspect individual zones for mixed signals.</div>';
  $('dzCaveat').textContent=(cached?.status?.officialZonesAreExact===false || view.isEstimate) ? 'Shot zones are ESPN coordinate estimates, not official NBA zone classifications. Total FGA and FG% are descriptive, not a prediction of any individual player prop.' : 'Shot-zone totals are an as-of snapshot; total FGA is not a per-game number. A high opponent FG% alone does not predict an individual player prop.';
  $('dzCourt').querySelectorAll('[data-zone]').forEach(b=>b.onclick=()=>choose(b.dataset.zone));
@@ -111,6 +113,14 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
   if(!$('dzTeam'))return;
   $('dzRefresh').onclick=()=>load(true);
   window.addEventListener('scout-zones-open',()=>load(false));
+  window.addEventListener('scout-zone-select',async event=>{
+   const team=event.detail?.team,zone=event.detail?.zone;
+   if(!cached)await load(false);
+   if(cached?.defense?.teams?.some(x=>x.code===team)){
+    $('dzTeam').value=team;
+    selectedZone=ZONES.some(z=>z.id===zone)?zone:'rim';render();
+   }
+  });
   // Defer a network request until the tab is opened.
   if(!$('zonesPage').hidden)load(false);
  };

@@ -55,6 +55,17 @@
   </section>
   <section id="zonesPage" class="page" hidden>
    <div class="dz-heading"><div><div class="overline">DEFENSIVE ZONE WEAKNESSES</div><h2>Where opponents get their shots</h2><p>Choose a defensive team. Tap a zone to see opponent FGA, FG% allowed, and how both compare with the NBA average.</p></div></div>
+   <div class="dz-panel zo-panel" id="zoPanel">
+    <div class="zo-panel-head"><div><div class="overline">AUTO-MATCHED PLAYER OPPORTUNITIES</div>
+     <h3>Top player vs. defensive-zone matches for every game</h3>
+     <p>Automatically ranks players by their usual shot locations, the defense's allowed shot volume and FG%, recent FGA, and recent minutes. No player-by-player selection needed.</p></div></div>
+    <div class="zo-controls"><label for="zoGame">GAME<select id="zoGame"><option>Loading today's NBA games…</option></select></label>
+     <label for="zoMode">WHAT TO RANK<select id="zoMode"><option value="overall">Best overall alignment</option><option value="volume">More shot-access opportunity</option><option value="efficiency">Higher FG% matchup</option><option value="three">Three-point opportunities</option></select></label>
+     <button class="button secondary" id="zoReload" type="button">↻ Update matches</button></div>
+    <div id="zoStatus" role="status" aria-live="polite">Open the Defense Zones tab to load each game's best player matches.</div>
+    <div id="zoResults" aria-label="Ranked game-specific defensive-zone matching players"></div>
+    <p class="zo-note">Match grades are descriptive evidence, <strong>not predicted hit rates, projected FGA, or bet approvals</strong>. ESPN shot locations are approximations. Availability, projected minutes, current player role, exact PrizePicks line and market price must still be verified. Ranking weighs defense shot volume 30%, defense FG% 21%, player FGA 22%, minutes 14%, recent attempts 8%, and stability 5%. Tap any player to inspect the relevant defensive zone.</p>
+   </div>
    <div class="dz-controls"><label for="dzTeam">DEFENDING TEAM<select id="dzTeam" aria-label="Select the NBA defending team"><option value="">Loading teams…</option></select></label><button id="dzRefresh" class="button secondary" type="button">↻ Refresh zones</button></div>
    <div id="dzStatus" class="dz-status" role="status">Open this tab to load the latest zone data.</div>
    <div class="dz-panel"><h3>Most permissive zones</h3><p class="dz-panel-note">These zones show noticeably higher opponent volume, shooting percentage, or both. Tap to inspect.</p><div id="dzWeaknesses" class="dz-weak-grid" aria-live="polite"></div></div>
@@ -73,7 +84,7 @@
   <div id="insightBody" class="insight-body" aria-live="polite"><p>Loading verified sources…</p></div>
  </section>
 </div>
-<script type="module" src="/clean.js?v=2.7"></script><script type="module" src="/defense-zones.mjs?v=3.5"></script>
+<script type="module" src="/clean.js?v=2.7"></script><script type="module" src="/defense-zones.mjs?v=3.5"></script><script type="module" src="/zone-opportunity-ui.mjs?v=3.7"></script>
 <script type="module" src="/rotowire-upload.js?v=2.0"></script>
 <script type="module" src="/insight-ui.js?v=2.7"></script>
 </body></html>

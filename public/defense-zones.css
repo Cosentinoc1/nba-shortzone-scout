@@ -41,3 +41,40 @@
 @media(max-width:920px){.dz-layout{grid-template-columns:1fr}.dz-court{max-width:440px}.dz-weak-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){.dz-weak-grid{grid-template-columns:1fr}.dz-lead{min-height:0}.dz-court{max-width:390px}.dz-panel{padding:12px}.dz-zone-row{grid-template-columns:minmax(90px,1fr) repeat(3,minmax(55px,.72fr));gap:4px;padding:10px 5px}.dz-zone-row b{font-size:12px}.dz-zone-name b{font-size:11px}.dz-zone-row small{font-size:8px}.dz-small-name{font-size:10px}.dz-court-zone strong{font-size:15px}}
 @media(max-width:360px){.dz-zone-row{grid-template-columns:minmax(85px,1fr) repeat(3,minmax(45px,.68fr));gap:2px}.dz-court-zone strong{font-size:13px}}
+
+/* Defensive grade separation and automatic game matchup opportunity explorer (v3.7). */
+.dz-separate-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px 0}
+.dz-separate-grade>div{background:#1b3046;border:1px solid #415674;border-radius:10px;padding:12px}
+.dz-separate-grade strong{display:block;color:#f3f8ff;font-size:27px;font-family:Manrope,sans-serif;line-height:1.2}
+.dz-separate-grade small{display:block;color:#b9c9da;font-size:11px;margin-top:5px}
+.dz-separate-grade p{font-size:11px;line-height:1.45;margin:6px 0 0;color:#9eb0c6}
+.dz-lead em{font-style:normal;font-size:11px;color:#e5d8b4;font-weight:700}
+.zo-panel{margin:14px 0 18px;border-color:#45698a;background:linear-gradient(135deg,#14253c,#101c30)}
+.zo-panel-head{display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap}
+.zo-panel-head h3{font-size:18px;margin:3px 0}
+.zo-panel-head p{color:#afc0d7;font-size:12px;margin:0;max-width:760px}
+.zo-controls{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin:16px 0 8px}
+.zo-controls label{display:flex;flex:1 1 200px;flex-direction:column;font-weight:800;font-size:10px;letter-spacing:.5px;color:#afc0d7;gap:6px}
+.zo-controls select{width:100%;padding:11px;border:1px solid #526985;border-radius:10px;color:#f8fbff;background:#1b2e45;font-size:14px}
+#zoStatus{font-size:12px;color:#a9bacf;margin:8px 0 14px}
+#zoResults{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.zo-game{background:#122137;border:1px solid #304963;border-radius:13px;min-width:0;overflow:hidden}
+.zo-game-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:13px 13px 11px;border-bottom:1px solid #304963}
+.zo-game-heading strong{display:block;font-size:14px}.zo-game-heading small{display:block;color:#92a6bd;font-size:11px;margin-top:3px}
+.zo-game-open{border:1px solid #71849b;border-radius:7px;background:#233852;color:#e4ebff;white-space:nowrap;font-size:11px;padding:7px}
+.zo-list{display:flex;flex-direction:column}
+.zo-player{background:transparent;border:0;color:#f4f7ff;display:grid;grid-template-columns:20px minmax(120px,1fr);gap:8px 10px;text-align:left;padding:11px 13px;width:100%;border-bottom:1px solid #2b4057}
+.zo-player:hover,.zo-player:focus-visible{background:#203851}
+.zo-rank{color:#abd18c;font-weight:800;font-size:13px}
+.zo-player-body{min-width:0;display:flex;flex-direction:column;gap:4px}
+.zo-player-body>strong{font-size:13px}.zo-player-body strong small{font-size:10px;color:#b1c4db;font-weight:500}
+.zo-zone-line{font-size:11px;color:#b9dfe1}.zo-zone-line b{color:#e5fbfc}
+.zo-subline{font-size:10px;color:#a6b8c9;line-height:1.5}
+.zo-tags{display:flex;gap:5px;flex-wrap:wrap}.zo-tags em{font-size:9px;letter-spacing:.3px;border-radius:5px;background:#233a48;color:#b9dcd0;padding:3px 5px;font-style:normal;font-weight:700}
+.zo-metrics{grid-column:2;display:grid;grid-template-columns:1.25fr repeat(4,1fr);gap:4px}
+.zo-metrics>span,.zo-metrics>b{background:#203249;border:1px solid #334c63;border-radius:7px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:6px 1px}
+.zo-metrics b{font-size:15px;color:#f4f8ff}.zo-metrics>span strong{font-size:13px}.zo-metrics small{color:#9fb2c8;font-size:9px;text-align:center;font-weight:500}
+.zo-note{font-size:11px;color:#a8bcd1;line-height:1.7;border-top:1px solid #3a536d;padding-top:12px;margin-top:18px}
+.zo-empty{font-size:12px;color:#afbdd3;padding:14px}
+@media(max-width:900px){#zoResults{grid-template-columns:1fr}}
+@media(max-width:600px){.zo-panel{padding:12px}.zo-player{padding:10px 7px}.zo-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.zo-metrics b{font-size:13px}.zo-game-heading{padding:11px 8px}}

@@ -1,7 +1,7 @@
 {
   "name": "nba-zone-matchup-scout",
   "version": "2.7.1",
-  "description": "NBA Scout RFPP 2.7 ranked research + daily Performance Review",
+  "description": "NBA Scout RFPP 2.7 with Defense Zones game matchup opportunity explorer",
   "private": true,
   "type": "module",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node server.mjs",
-    "pretest": "python3 PATCH_SCOUT_31.py",
+    "pretest": "python3 PATCH_SCOUT_MATCHUPS_37.py",
     "test": "node --test test/*.test.mjs",
     "dev": "node --watch server.mjs"
   },
