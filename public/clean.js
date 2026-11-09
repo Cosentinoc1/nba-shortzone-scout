@@ -177,7 +177,9 @@ window.addEventListener('scout-rotowire-data',async event=>{
   const data=await request('/api/picks/rotowire',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pack)});
   if(pack.date!==$('dateInput').value)return;
   state.data=data;setGames(data);showFeed(data);renderPicks();renderGradeBoard();
-  if(note){note.dataset.kind='ok';note.textContent=`${data.rotowireStatus?.playerRows||pack.rows.length} RotoWire players · ${Math.floor((data.rotowireStatus?.directionsMatched||0)/2)} matched props · Top 10 now requires forecast/history agreement`;}
+  if(note){const rs=data.rotowireStatus||{},matches=rs.uniquePropsMatched??Math.floor((rs.directionsMatched||0)/2);
+   note.dataset.kind=matches?'ok':'warning';
+   note.textContent=`${rs.playerRows??pack.rows.length} RotoWire players · ${matches} matched prop lines · ${rs.uniquePlayersMatched??0} players matched`+(rs.normalizedNameMatches?` · ${rs.normalizedNameMatches} name aliases reconciled`:'')+(rs.wrongOpponentDirections?` · ${rs.wrongOpponentDirections} opponent mismatches`:'')+(matches===0?` — ${rs.message||'Check the slate date, teams, and player names.'}`:' · RotoWire forecasts applied; lineups still require confirmation');}
  }catch(e){if(note){note.dataset.kind='error';note.textContent=`Projection analysis error: ${e.message}`}}
 });
 window.addEventListener('scout-rotowire-clear',()=>loadPicks());

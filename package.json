@@ -1,15 +1,15 @@
 {
-  "name": "nba-zone-matchup-scout",
-  "version": "2.7.1",
-  "description": "NBA Scout easy-pick Top 10 with historical, zone and injury explanations",
-  "private": true,
-  "type": "module",
-  "engines": {"node": ">=20"},
-  "scripts": {
-    "start": "node server.mjs",
-    "pretest": "python3 PATCH_SCOUT_QUICK_39.py",
-    "test": "node --test test/*.test.mjs",
-    "dev": "node --watch server.mjs"
-  },
-  "license": "UNLICENSED"
+ "name":"nba-zone-matchup-scout",
+ "version":"2.7.1",
+ "description":"NBA Scout explainable Top 10 with RotoWire slate and identity diagnostics",
+ "private":true,
+ "type":"module",
+ "engines":{"node":">=20"},
+ "scripts":{
+  "start":"node server.mjs",
+  "pretest":"python3 PATCH_SCOUT_ROTO_310.py",
+  "test":"node --test test/*.test.mjs",
+  "dev":"node --watch server.mjs"
+ },
+ "license":"UNLICENSED"
 }
