@@ -1,0 +1,24 @@
+/* NBA Scout 3.11: legible mobile zone evidence, league ranks and opponent shooters */
+.dz-panel,.dz-layout,.dz-rows,.dz-weak-grid,.dz-court,.dz-311-3pa{min-width:0;max-width:100%;box-sizing:border-box}
+.dz-311-ranks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.dz-311-ranks span{display:flex;flex-direction:column;gap:4px;border:1px solid #405b6e;border-radius:9px;background:#1a3348;padding:10px;min-width:0}
+.dz-311-ranks b{font-size:18px;color:#f1f8ff}.dz-311-ranks small{color:#bed0df;font-size:10px;line-height:1.5}
+.dz-311-3pa{border-top:1px solid #344b66;margin-top:17px;padding-top:14px}
+.dz-311-shooters-heading h4{font-size:14px;margin:0 0 5px;color:#eef7ff}
+.dz-311-shooters-heading p,.dz-311-note,.dz-311-none{font-size:11px;line-height:1.6;color:#b1c3d6;margin:6px 0 12px}
+.dz-311-shooters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.dz-311-shooters>div{min-width:0;background:#1c3046;border:1px solid #405771;border-radius:10px;padding:9px;display:grid;gap:5px}
+.dz-311-shooters b{font-size:11px;white-space:normal;overflow-wrap:anywhere}
+.dz-311-shooters strong{font-size:15px;color:#deffbf}
+.dz-311-shooters small{font-size:10px;color:#a9c2d4;line-height:1.4}
+.dz-zone-name small{overflow-wrap:anywhere}
+@media(max-width:1150px){.dz-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important}.dz-layout>.dz-panel{width:100%;min-width:0}}
+@media(max-width:760px){.dz-weak-grid{grid-template-columns:minmax(0,1fr)!important}.dz-zone-row{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:8px!important;row-gap:9px!important;padding:10px!important}.dz-zone-row>.dz-zone-name{grid-column:1 / -1}.dz-zone-row>span:nth-child(2){grid-column:1}.dz-zone-row>span:nth-child(3){grid-column:2}.dz-zone-row>span:nth-child(4){grid-column:1 / -1}.dz-zone-row small{font-size:10px!important}.dz-zone-row b{font-size:13px!important}.dz-311-shooters{grid-template-columns:minmax(0,1fr)}.dz-panel{overflow-x:hidden}.dz-court-zone small{font-size:9px}}
+@media(max-width:400px){.dz-rim{left:30%;width:40%}.dz-paint{left:30%;width:40%}.dz-mid{left:30%;width:40%}.dz-court-zone{padding:4px 2px}.dz-court-zone strong{font-size:13px}.dz-small-name{font-size:9px}}
+.qp-scan-person .qp-311-flag{display:block;margin-top:5px;font-size:10px;line-height:1.45;overflow-wrap:anywhere;white-space:normal}
+.qp-311-red{color:#ffb4b8!important}.qp-311-green{color:#c9f6ae!important}.qp-311-muted{color:#acc0d4!important}
+
+/* v3.12 source health and incomplete-source cautions */
+.dz-data-audit{font-size:.84rem;line-height:1.6;margin:10px 0 14px;padding:12px;border:1px solid #57657e;border-radius:12px;background:rgba(54,72,96,.16)}
+.dz-data-audit strong{display:block;font-size:.91rem}.dz-data-audit.warning{border-color:#b07f42}.dz-data-audit.error{border-color:#be565a}
+.qp-312-market{color:#f0cd83;font-size:.75rem}

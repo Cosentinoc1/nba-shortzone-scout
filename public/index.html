@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout v2.6 · Explainable MORE / LESS Research</title><link rel="stylesheet" href="/clean.css?v=2.7"><link rel="stylesheet" href="/defense-zones.css?v=3.5"><link rel="stylesheet" href="/quick-picks.css?v=3.9"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1323"><meta name="description" content="NBA Scout: clear player prop research with exact lines, historical evidence and verified-data warnings."><title>NBA Scout v2.6 · Explainable MORE / LESS Research</title><link rel="stylesheet" href="/clean.css?v=2.7"><link rel="stylesheet" href="/defense-zones.css?v=3.5"><link rel="stylesheet" href="/quick-picks.css?v=3.9"><link rel="stylesheet" href="/zone-v311.css?v=3.12"></head>
 <body>
 <div class="app">
  <header class="topbar">
@@ -67,11 +67,11 @@
     <p class="zo-note">Match grades are descriptive evidence, <strong>not predicted hit rates, projected FGA, or bet approvals</strong>. ESPN shot locations are approximations. Availability, projected minutes, current player role, exact PrizePicks line and market price must still be verified. Ranking weighs defense shot volume 30%, defense FG% 21%, player FGA 22%, minutes 14%, recent attempts 8%, and stability 5%. Tap any player to inspect the relevant defensive zone.</p>
    </div>
    <div class="dz-controls"><label for="dzTeam">DEFENDING TEAM<select id="dzTeam" aria-label="Select the NBA defending team"><option value="">Loading teams…</option></select></label><button id="dzRefresh" class="button secondary" type="button">↻ Refresh zones</button></div>
-   <div id="dzStatus" class="dz-status" role="status">Open this tab to load the latest zone data.</div>
+   <div id="dzStatus" class="dz-status" role="status">Open this tab to load the latest zone data.</div><div id="dzDataQuality" class="dz-data-audit warning">Checking source totals and player coverage…</div>
    <div class="dz-panel"><h3>Most permissive zones</h3><p class="dz-panel-note">These zones show noticeably higher opponent volume, shooting percentage, or both. Tap to inspect.</p><div id="dzWeaknesses" class="dz-weak-grid" aria-live="polite"></div></div>
    <div class="dz-layout">
     <div class="dz-panel"><h3 id="dzTitle">Opponent shooting map</h3><p class="dz-panel-note">Six zones — schematic view, not precise court boundaries.</p><div id="dzCourt" class="dz-court" role="group" aria-label="Selectable opponent shooting zones"></div><div id="dzHighlight" class="dz-focus" aria-live="polite">Choose a team and a zone.</div></div>
-    <div class="dz-panel"><h3>All six defensive zones</h3><p class="dz-panel-note">Raw FGA totals and opponent FG% this season. Red FG% difference means more accurate shooting than the league average.</p><div id="dzRows" class="dz-rows" aria-label="Shot zones, attempts and accuracy allowed"></div><div class="dz-guide"><strong>How to read it:</strong> FGA is the total shot attempts the defense allowed in that zone. FG% is the share opponents made. “FG% vs league” measures percentage-point difference in that same zone, not a predicted prop hit rate.</div><p class="dz-caveat" id="dzCaveat"></p></div>
+    <div class="dz-panel"><h3>All six defensive zones</h3><p class="dz-panel-note">Raw FGA totals and opponent FG% this season. Red FG% difference means more accurate shooting than the league average.</p><div id="dzRows" class="dz-rows" aria-label="Shot zones, attempts and accuracy allowed"></div><section id="dzThrees" class="dz-311-3pa" aria-label="Opposing team three-point attempt leaders"></section><div class="dz-guide"><strong>How to read it:</strong> FGA is the total shot attempts the defense allowed in that zone. FG% is the share opponents made. “FG% vs league” measures percentage-point difference in that same zone, not a predicted prop hit rate.</div><p class="dz-caveat" id="dzCaveat"></p></div>
    </div>
   </section>
   <section class="bottom-panel"><span class="overline">HOW THIS WORKS</span><div class="steps"><div><b>01</b><strong>Check the line</strong><small>Exact standard PrizePicks number and freshness</small></div><div><b>02</b><strong>Confirm opportunity</strong><small>Minutes, attempts, playstyle and matchup</small></div><div><b>03</b><strong>Run final veto</strong><small>Injuries, role, independent projections and price</small></div></div><div class="bottom-text">Built from the shot-chart, opportunity and game-context approaches we studied. Only observed NBA box-score data is automatically scored; unsupported tracking and injury signals are openly labeled as pending checks.</div></section>
@@ -84,7 +84,7 @@
   <div id="insightBody" class="insight-body" aria-live="polite"><p>Loading verified sources…</p></div>
  </section>
 </div>
-<script type="module" src="/clean.js?v=2.7"></script><script type="module" src="/defense-zones.mjs?v=3.5"></script><script type="module" src="/zone-opportunity-ui.mjs?v=3.7"></script>
+<script type="module" src="/clean.js?v=2.7"></script><script type="module" src="/defense-zones.mjs?v=3.12"></script><script type="module" src="/zone-opportunity-ui.mjs?v=3.7"></script>
 <script type="module" src="/rotowire-upload.js?v=2.0"></script>
 <script type="module" src="/insight-ui.js?v=2.7"></script>
 </body></html>

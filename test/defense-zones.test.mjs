@@ -21,7 +21,7 @@ test('labels compare percentages and shot share independently, without equating 
  const data={teams:[{code:'TST',name:'Test',attempts:200,zones:Object.fromEntries(ZONES.map((z,i)=>[z.id,{fga:i===0?60:28,fg:i===0?.72:.3,share:i===0?.3:.14}]))}],league:{zones:Object.fromEntries(ZONES.map(z=>[z.id,{fg:.6,share:.2}]))}};
  const out=summarizeDefenseZones(data,'TST');
  assert.equal(out.zones[0].flag,'WEAK SPOT');
- assert.ok(out.zones.slice(1).every(z=>z.flag==='TOUGH ZONE'));
+ assert.ok(out.zones.slice(1).every(z=>z.flag==='SMALL SAMPLE'));
  assert.equal(out.weaknesses[0].id,'rim');
  assert.equal(summarizeDefenseZones(data,'NOPE'),null);
 });

@@ -2,6 +2,7 @@
  * Uses the same backend defense snapshot as the court matchup tool. No new provider.
  */
 import {zoneSignalGrade} from './zone-metrics.mjs';
+import {zoneLeagueRankings,opposite3paLeaders} from './zone-league-v311.mjs';
 const ZONES = [
   {id:'rim',name:'Restricted area',short:'At rim'},
   {id:'paint',name:'Paint (non-RA)',short:'Paint'},
@@ -32,7 +33,7 @@ export function summarizeDefenseZones(defense, teamCode) {
     const fgDelta=fg!==null&&leagueFg!==null?fg-leagueFg:null;
     const volumeDelta=share!==null&&leagueShare!==null?share-leagueShare:null;
     const grades=zoneSignalGrade({fga,totalFga:attempts,fg,share,leagueFg,leagueShare});
-    const tiny = fga===null||fga<25;
+    const tiny = fga===null||fga<60;
     let flag='MIXED',tone='neutral',why='Mixed volume and accuracy';
     if(tiny){flag='SMALL SAMPLE';tone='caution';why='Not enough zone shots for a reliable label';}
     else if(fgDelta!==null&&volumeDelta!==null){
@@ -62,7 +63,9 @@ function zoneItem(z,selected=false){
 function rowItem(z){
  const on=z.id===selectedZone;
  return `<button type="button" class="dz-zone-row ${on?'is-selected':''}" data-zone="${escapeText(z.id)}" aria-pressed="${on}">
-  <span class="dz-zone-name"><b>${escapeText(z.name)}</b><small>${escapeText(z.flag)}</small></span>
+  <span class="dz-zone-name"><b>${escapeText(z.name)}</b><small>${escapeText(z.flag)}</small>
+   <small>NBA shot-access rank #${z.shareRank??'—'}/${z.shareTeams??30} (1 = most)</small>
+   <small>NBA FG% allowed rank ${z.accuracyRank==null?'insufficient sample':'#'+z.accuracyRank+'/'+z.accuracyTeams}</small></span>
   <span><b>${number(z.fga)}</b><small>FGA allowed · volume grade ${z.volumeGrade??"—"}</small></span>
   <span><b>${pct(z.fg)}</b><small>FG% allowed · accuracy grade ${z.efficiencyGrade??"—"}</small></span>
   <span class="dz-delta ${z.fgDelta!==null&&z.fgDelta>0?'dz-up':z.fgDelta!==null&&z.fgDelta<0?'dz-down':''}"><b>${pp(z.fgDelta)}</b><small>FG% vs league</small></span>
@@ -71,6 +74,8 @@ function rowItem(z){
 function render() {
  const code=$('dzTeam')?.value, view=summarizeDefenseZones(cached?.defense,code);
  if(!view){if($('dzStatus'))$('dzStatus').textContent='No defensive data for this team.';return;}
+ const leagueRanks=zoneLeagueRankings(cached.defense,code);
+ view.zones=view.zones.map(z=>({...z,...(leagueRanks[z.id]||{})}));
  if(!view.zones.some(z=>z.id===selectedZone))selectedZone='rim';
  const active=view.zones.find(z=>z.id===selectedZone);
  $('dzTitle').textContent=`${view.name} · opponent shot zones`;
@@ -78,9 +83,24 @@ function render() {
  $('dzCourt').innerHTML=view.zones.map(z=>zoneItem(z,z.id===selectedZone)).join('');
  $('dzRows').innerHTML=view.zones.map(z=>rowItem(z)).join('');
  $('dzHighlight').innerHTML=`<div class="dz-active-badge dz-${active.tone}">${escapeText(active.flag)}</div><strong>${escapeText(active.name)}</strong><p>${escapeText(active.why)}.</p><div class="dz-focus-metrics"><span><b>${number(active.fga)}</b><small>FGA allowed (total)</small></span><span><b>${pct(active.share)}</b><small>Share of shots allowed</small></span><span><b>${pct(active.fg)}</b><small>FG% allowed</small></span><span><b>${pct(active.leagueFg)}</b><small>League FG%</small></span></div><div class="dz-separate-grade"><div><strong>${active.volumeGrade??'—'}/100</strong><small>VOLUME ALLOWED GRADE</small><p>${escapeText(active.volumeLabel)} · ${pp(active.volumeDelta)} shot share vs league</p></div><div><strong>${active.efficiencyGrade??'—'}/100</strong><small>FG% ALLOWED GRADE</small><p>${escapeText(active.efficiencyLabel)} · ${pp(active.fgDelta)} FG% vs league</p></div></div><p class="dz-compare">50 is league neutral. Values above 50 are more permissive. FG% grades shrink small zone samples (${number(active.fga)} attempts); neither grade is a player's probability of scoring.</p>`;
+ $('dzHighlight').insertAdjacentHTML('beforeend',`<div class="dz-311-ranks"><span><b>#${active.shareRank??'—'}/${active.shareTeams??30}</b><small>NBA shot-access allowed · #1 = most</small></span><span><b>${active.accuracyRank==null?'Low sample':'#'+active.accuracyRank+'/'+active.accuracyTeams}</b><small>NBA FG% allowed · #1 = highest</small></span></div>`);
+ const shooters=opposite3paLeaders({team:code,schedule:cached.schedule||[],players:cached.players||[],rosters:cached.rosters||{},asOf:cached.status?.dataAsOf||view.asof,slateDay:$('dateInput')?.value||cached.status?.date||null});
+ const area=(selectedZone==='left'||selectedZone==='right'||selectedZone==='above');
+ const heading=shooters.opponent?`${shooters.opponent} · ${shooters.coverageComplete?'opponent 3-point attempt leaders':'known 3-point shooters (partial)'}`:'Opposing team 3-point shooters';
+ $('dzThrees').innerHTML=`<div class="dz-311-shooters-heading"><h4>${escapeText(heading)}</h4><p>Three-point areas · ${area?'selected outside zone':'select a corner or above-break zone to compare'}. Historical FGA per played game; not projected minutes.</p></div>`+
+ (shooters.players.length?`<p class="dz-311-note">${escapeText(shooters.message)}</p><div class="dz-311-shooters">${shooters.players.map((p,i)=>`<div><b>${i+1}. ${escapeText(p.player)}</b><strong>${p.threePA.toFixed(1)} 3PA/G</strong><small>${p.above.toFixed(1)} above break · ${p.corner.toFixed(1)} corners · ${p.gp} games</small></div>`).join('')}</div>`:
+ `<p class="dz-311-none">${escapeText(shooters.message)}</p>`)+
+ `<p class="dz-311-note">Only players in the currently listed opponent roster with at least four observed appearances are ranked. ESPN estimated coordinate zones; recent scratches and role changes require separate verification.</p>`;
  const lead=view.weaknesses.slice(0,3);
  $('dzWeaknesses').innerHTML=lead.length?lead.map((z,i)=>`<button class="dz-lead" type="button" data-zone="${escapeText(z.id)}"><small>${i+1} · ${escapeText(z.flag)}</small><strong>${escapeText(z.name)}</strong><span>${pct(z.fg)} FG% allowed · ${number(z.fga)} FGA · ${pp(z.fgDelta)} vs league</span><em>Volume grade ${z.volumeGrade??"—"} · FG% grade ${z.efficiencyGrade??"—"}</em></button>`).join(''):
   '<div class="dz-lead dz-no-lead">No clear weak spot by the current volume/FG% thresholds. Inspect individual zones for mixed signals.</div>';
+ const q=cached?.status?.dataQuality;
+ const auditEl=$('dzDataQuality');
+ if(auditEl){
+  const cls=!q?'warning':!q.structuralOk?'error':q.playerLeaderboardsComplete?'ok':'warning';
+  auditEl.className='dz-data-audit '+cls;
+  auditEl.innerHTML='<strong>DATA QUALITY · '+escapeText(!q?'PENDING':q.structuralOk?'INTERNAL TOTALS RECONCILED':'SOURCE TOTALS CONFLICT')+'</strong>'+escapeText(q?`${q.teamCount}/30 defense teams · ${q.teamFga.toLocaleString('en-US')} classified FGA · ${q.playerTeamCoverage}/30 player teams · ${q.validPlayerProfiles} profiles with valid GP · snapshot ${q.asOf||'unknown'}`:'Waiting for source diagnostics')+'<p>'+escapeText(q?(q.issues[0]||q.warnings.filter(x=>!/independent live NBA/i.test(x)).slice(0,2).join(' · ')||'No arithmetic errors found'):'No current diagnostic report')+'</p><small>Arithmetic consistency is NOT independent verification against NBA official box scores.</small>';
+ }
  $('dzCaveat').textContent=(cached?.status?.officialZonesAreExact===false || view.isEstimate) ? 'Shot zones are ESPN coordinate estimates, not official NBA zone classifications. Total FGA and FG% are descriptive, not a prediction of any individual player prop.' : 'Shot-zone totals are an as-of snapshot; total FGA is not a per-game number. A high opponent FG% alone does not predict an individual player prop.';
  $('dzCourt').querySelectorAll('[data-zone]').forEach(b=>b.onclick=()=>choose(b.dataset.zone));
  $('dzRows').querySelectorAll('[data-zone]').forEach(b=>b.onclick=()=>choose(b.dataset.zone));

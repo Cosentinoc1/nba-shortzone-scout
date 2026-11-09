@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {opposite3paLeaders} from '../public/zone-league-v311.mjs';
+const data={team:'NYK',schedule:[{home:'NYK',away:'BOS'}],rosters:{BOS:Array.from({length:15},(_,i)=>({id:String(i)}))},players:Array.from({length:4},(_,i)=>({id:String(i),team:'BOS',name:'Shooter '+i,gp:6,zones:{above:{fga:30-i},left:{fga:8},right:{fga:5}}}))};
+test('missing team profiles are not fabricated into a top-shooter list',()=>{const r=opposite3paLeaders({...data,players:[]});assert.equal(r.players.length,0);assert.match(r.message,/does not cover/)});
+test('old snapshot refuses stale top-shooter rankings',()=>{const r=opposite3paLeaders({...data,asOf:'2026-11-05',slateDay:'2026-11-09'});assert.equal(r.players.length,0);assert.match(r.message,/days old/)});
+test('partial data is explicitly labelled rather than presenting a complete ranking',()=>{const r=opposite3paLeaders({...data,asOf:'2026-11-09',slateDay:'2026-11-09'});assert.equal(r.players.length,4);assert.equal(r.coverageComplete,false);assert.match(r.message,/PARTIAL/)});
+test('future-stat data cannot leak into an older slate',()=>{const r=opposite3paLeaders({...data,asOf:'2026-11-09',slateDay:'2026-11-07'});assert.equal(r.players.length,0);assert.match(r.message,/future-data leakage/)});

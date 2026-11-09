@@ -21,6 +21,7 @@ function effectiveCandidates(){
  rows.sort((a,b)=>tier(b)-tier(a)||(b.researchRank?.score??0)-(a.researchRank?.score??0));
  const picked=[],seen=new Set();for(const x of rows){const key=x.player.toLowerCase().trim();if(!seen.has(key)){seen.add(key);picked.push(x)}if(picked.length===10)break}return picked;
 }
+import {describeSharedGames} from './correlation-v312.mjs';
 const checkStyle=x=>x==='veto'?'bad':x==='observed'||x==='confirmed'?'good':x==='expected'||x==='proxy'||x==='partial'||x==='model'||x==='reported'?'soft':'pending';
 const checkBadgeText=x=>({veto:'VETO',observed:'SOURCED',confirmed:'CONFIRMED',expected:'EXPECTED',proxy:'PROXY',partial:'PARTIAL',model:'HISTORY',reported:'REPORTED',pending:'PENDING',unverified:'UNVERIFIED'})[x]||String(x).toUpperCase();
 function defenseText(d,side){if(!d?.available)return 'NOT VERIFIED';
@@ -30,7 +31,7 @@ function defenseText(d,side){if(!d?.available)return 'NOT VERIFIED';
 function renderQuickScan(rows){
  const escShort=x=>esc(String(x||'').slice(0,190));
  return `<section class="qp-scan" aria-label="Top 10 quick scan"><div class="qp-scan-header"><div><span class="overline">60-SECOND PICK REVIEW</span><h3>See the reason before opening a player</h3><p>Ranked research, not bet-ready choices. Tap a row for minutes, injuries, zones and exact-line history.</p></div><span class="qp-counter">${rows.length} research candidates</span></div>
- <div class="qp-scan-list">${rows.map((c,i)=>{const q=c.quickRead||{},h=c.hit10||{},n=(h.win??'—')+'/'+(h.sample??'—');return `<a href="#qp-card-${i}" class="qp-scan-row"><span class="qp-scan-rank">${i+1}</span><span class="qp-scan-person"><b>${escShort(c.player)}</b><small>${escShort(c.team)} vs ${escShort(c.opponent)} · ${escShort(c.side)} ${escShort(c.line)} ${escShort(c.stat)}</small></span><span class="qp-scan-right"><strong class="qp-mini qp-mini-${esc(q.quality||'watch')}">${escShort(q.status||c.researchRank?.tier||'CHECK')}</strong><small>${escShort(n)} L10 wins</small></span></a>`}).join('')}</div></section>`;
+ <div class="qp-scan-list">${rows.map((c,i)=>{const q=c.quickRead||{},h=c.hit10||{},n=(h.win??'—')+'/'+(h.sample??'—');return `<a href="#qp-card-${i}" class="qp-scan-row"><span class="qp-scan-rank">${i+1}</span><span class="qp-scan-person"><b>${escShort(c.player)}</b><small>${escShort(c.team)} vs ${escShort(c.opponent)} · ${escShort(c.side)} ${escShort(c.line)} ${escShort(c.stat)}</small><small class="qp-311-flag ${c.newsZone?.flags?.some(f=>f.tone==='red')?'qp-311-red':c.newsZone?.flags?.some(f=>f.tone==='green')?'qp-311-green':'qp-311-muted'}">${escShort(c.newsZone?.flags?.find(f=>f.tone==='red'||f.tone==='green')?.title||c.newsZone?.shot?.reason?.slice(0,84)||'Zone/news signals awaiting verification')}</small></span><span class="qp-scan-right"><strong class="qp-mini qp-mini-${esc(q.quality||'watch')}">${escShort(q.status||c.researchRank?.tier||'CHECK')}</strong><small>${escShort(n)} L10 wins</small>${describeSharedGames(c,rows)?`<small class="qp-312-market">${escShort(describeSharedGames(c,rows))}</small>`:''}</span></a>`}).join('')}</div></section>`;
 }
 function renderQuickDecision(c){
  const q=c.quickRead;
@@ -46,7 +47,7 @@ function renderPicks(){
  const selected=effectiveCandidates();$('pickCount').textContent=selected.length;
  const stale=data.freshness?.status==='stale'||data.freshness?.status==='unverified';
  const source=data.feed?.source||'Imported CSV',count=data.boardCount||0;const rw=data.rotowireStatus;
- $('pickSummary').textContent=`${count} standard lines · ${data.matched||0} scored directions · ${data.qualified||0} eligible · ${source}${rw?' · RotoWire '+rw.playerRows+' player projections':''}${stale?' · STALE': ''}`;
+ $('pickSummary').textContent=`${count} standard lines · ${data.matched||0} scored directions · ${data.qualified||0} eligible · ${source}${rw?' · RotoWire '+rw.playerRows+' player projections':''}${stale?' · STALE': ''}${data.dataQuality?.structuralOk===false?' · DEFENSIVE DATA INCONSISTENT':data.dataQuality?.playerTeamCoverage<30?' · PLAYER ZONES PARTIAL': ''}`;
  $('listTag').textContent=stale?'STALE LINES':state.side==='WORST'?'Tough defensive matchups · not automatic unders':'Source-aware research · NOT final bets';
  if(!selected.length){
   $('picksGrid').innerHTML=blank('No qualifying research directions for this game day','Check the selected game date and pregame offers. Missing RotoWire alone no longer deletes research candidates; no forced 10.');
