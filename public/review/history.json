@@ -1,7 +1,30 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-10T05:51:58.575703+00:00",
+  "updatedAt": "2026-11-10T21:16:04.385Z",
   "days": [
+    {
+      "date": "2026-11-10",
+      "status": "not_frozen",
+      "scoringVersion": "RFPP 2.7",
+      "message": "Pregame capture failed (The operation was aborted due to timeout). Retry scheduled; no picks or result percentage can be claimed.",
+      "source": {
+        "site": "https://nba-shotzone-scout.onrender.com",
+        "provider": "NBA Scout /api/picks",
+        "observedAt": "2026-11-10T21:15:36.326Z",
+        "providerSidesVerified": false
+      },
+      "snapshot": null,
+      "audit": null,
+      "captureChecks": [
+        {
+          "at": "2026-11-10T21:15:36.326Z",
+          "status": "not_frozen",
+          "message": "Pregame capture failed (The operation was aborted due to timeout). Retry scheduled; no picks or result percentage can be claimed."
+        }
+      ],
+      "captureAttempts": 1,
+      "observedBoard": null
+    },
     {
       "date": "2026-11-09",
       "status": "not_frozen",
@@ -511,7 +534,7 @@
             "voids": 0,
             "unverified": 0,
             "graded": 10,
-            "hitRate": 50.0,
+            "hitRate": 50,
             "rows": 10
           },
           "less": {
@@ -521,7 +544,7 @@
             "voids": 0,
             "unverified": 0,
             "graded": 10,
-            "hitRate": 50.0,
+            "hitRate": 50,
             "rows": 10
           },
           "bottom": {
@@ -541,7 +564,7 @@
             "voids": 0,
             "unverified": 0,
             "graded": 20,
-            "hitRate": 50.0,
+            "hitRate": 50,
             "rows": 20
           }
         },
