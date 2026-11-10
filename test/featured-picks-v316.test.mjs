@@ -83,9 +83,9 @@ test('Conflicting independent projected direction is not promoted as strong rese
 test('Frontend is interactive; server uses enriched board for all live/import/rotowire endpoints',()=>{
  const root=new URL('../',import.meta.url);const read=p=>readFileSync(new URL(p,root),'utf8');
  const server=read('server.mjs'),ui=read('public/clean.js'),html=read('public/index.html'),script=read('public/featured-picks-v316.mjs');
- assert.match(server,/buildFeaturedPicks\(enriched/);assert.match(server,/function quickExplain/);
+ assert.match(server,/buildFeaturedPicks\(\{\.\.\.enriched,date:day\}/);assert.match(server,/function quickExplain/);
  for(const api of ["'/api/picks'","'/api/picks/rotowire'","'/api/picks/import'"])assert.match(server,new RegExp(api));
- assert.match(ui,/renderFeaturedPicks\(data/);assert.match(html,/id="featuredPicks"/);
+ assert.match(ui,/renderSimplePicks\(data/);assert.match(html,/id="featuredPicks"/);
  assert.match(script,/data-fp-count/);assert.match(script,/data-fp-open/);
 });
 test('Top-two team shot responsibility is a source-labeled proxy, never invented USG%',()=>{

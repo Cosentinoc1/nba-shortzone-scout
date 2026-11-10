@@ -14,6 +14,7 @@ import {buildOffenseContext} from './lib/offense-context-v316.mjs';
 import {checkDataQuality} from './lib/data-quality-v312.mjs';
 import {observePlatformLines} from './lib/line-movement-v312.mjs';
 import {researchPlayer,STATS} from './lib/research.mjs';
+import {auditPlayerHistory} from './lib/history-integrity-v318.mjs';
 import {parseHistoryBoxScore} from './lib/espn-history-v315.mjs';
 import {normalizeRows,parseCsv,rankBoard} from './lib/props.mjs';
 import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
@@ -176,7 +177,7 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
    await saveCache();
  }catch(e){error=e.message;refreshStage='Retained validated snapshot';console.warn('Refresh:',e.message)}finally{busy=false}
 }
-function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'3.17.0',dataQuality:checkDataQuality({defense,players,rosters,asOf:dataAsOf,source}),researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
+function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'3.18.0',dataQuality:checkDataQuality({defense,players,rosters,asOf:dataAsOf,source}),researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
 function json(res,obj,statusCode=200){res.writeHead(statusCode,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj))}
 function requireTeam(code){const t=normalizeTeam(code);return rosters[t]?t:null}
 const quickZoneCache=new Map();
@@ -195,7 +196,7 @@ function quickExplain(board,ctx,slate,day){
  ctx.lineMovements=observePlatformLines(board.all||[],day);
  try {const enriched=enrichBoardQuickReads(board,{context:ctx,rosters,games:slate,
     zoneReport:zoneReportForPicks(day,slate),profiles:players,day,now:Date.now()});
-    return {...enriched,featuredPicks:buildFeaturedPicks(enriched,{now:Date.now(),offenseContext:buildOffenseContext(gameCache,day)}),
+    return {...enriched,featuredPicks:buildFeaturedPicks({...enriched,date:day},{now:Date.now(),offenseContext:buildOffenseContext(gameCache,day),gameCache}),
     sourcePulse:{newsFetched:Boolean(ctx.newsFetched),teamOddsFetched:Boolean(ctx.oddsFetched)},
     dataQuality:checkDataQuality({defense,players,rosters,asOf:dataAsOf,source})};}
  catch(e){console.warn('Quick-pick explanations unavailable:',e.message);return board;}
@@ -257,7 +258,7 @@ async function handler(req,res){
     }
     const result=buildPropInsight({gameCache,rosters,players,defense,day,team,opponent,playerName:name,line,market,tier,observedAt,expectedMinutes:minutes,
      context:{...ctx,game:ctx.games?.find(g=>g.id===found?.id||(g.away===team||g.home===team))||null}});
-    return json(res,{...result,historyFetch});
+    return json(res,{...result,historyFetch,historyAudit:result.supported?auditPlayerHistory({gameCache,team,playerName:name,stat:result.stat,day}):null});
    }
 
   if(pathname==='/api/picks'&&req.method==='GET'){
@@ -288,7 +289,8 @@ async function handler(req,res){
    try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.sourceError=String(e.message||e)}
    const verified=applyVerification({board:{...base,games:slate},context:ctx,gameCache,rosters,defense,day,limit:10,positionOverrides:projected});
    const result=applyRotoProjections(verified,projected,day,{limit:10,uploadedAt});
-   return json(res,{...quickExplain(result,ctx,slate,day),feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
+   const enriched=quickExplain(result,ctx,slate,day);
+   return json(res,{...enriched,rotowireStatus:{...enriched.rotowireStatus,uploadedRows:payload.rows.length,ignoredRows:payload.rows.length-projected.length},feed:feedStatusOnly(feed),games:slate,historyGames:Object.keys(gameCache).length});
   }
   if(pathname==='/api/picks/import'&&req.method==='POST'){
    // Untrusted user uploads only affect the current response. No server-side writes.
@@ -317,7 +319,7 @@ async function handler(req,res){
    let historyFetch=null;
    try{historyFetch=await ensureTeamHistory(offense,day)}catch(e){historyFetch={status:'unavailable',warning:e.message}};
    const result=researchPlayer({gameCache,offense,defense:opponent,playerId:id,playerName:roster.name,stat,side,line,expectedMinutes:minutes,day});
-   return json(res,{...result,dataAsOf,seasonSource:'ESPN box scores · last 10/20 pre-slate player appearances; loaded on demand',historyFetch,cacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length});
+   return json(res,{...result,historyAudit:auditPlayerHistory({gameCache,team:offense,playerId:id,playerName:roster.name,stat,day}),dataAsOf,seasonSource:'ESPN box scores · last 10/20 pre-slate player appearances; loaded on demand',historyFetch,cacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length});
   }
   if(pathname==='/api/accuracy'){
    const day=u.searchParams.get('date')||new Date(Date.now()-86400000).toLocaleDateString('en-CA',{timeZone:'America/Chicago'});
@@ -376,7 +378,7 @@ async function handler(req,res){
    fullRefresh().catch(e=>console.warn(e));return json(res,{accepted:true,status:status()},202);
   }
   if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
-  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/rotowire-upload.js':'rotowire-upload.js','/insight-ui.js':'insight-ui.js','/defense-ui.mjs':'defense-ui.mjs','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css','/review.html':'review.html','/review/review.js':'review/review.js','/review/review.css':'review/review.css','/review/history.json':'review/history.json','/defense-zones.mjs':'defense-zones.mjs','/defense-zones.css':'defense-zones.css','/quick-picks.css':'quick-picks.css','/featured-picks-v316.css':'featured-picks-v316.css','/featured-picks-v316.mjs':'featured-picks-v316.mjs','/zone-v311.css':'zone-v311.css','/zone-league-v311.mjs':'zone-league-v311.mjs','/correlation-v312.mjs':'correlation-v312.mjs'};
+  const files={'/':'index.html','/index.html':'index.html','/clean.js':'clean.js','/rotowire-upload.js':'rotowire-upload.js','/insight-ui.js':'insight-ui.js','/defense-ui.mjs':'defense-ui.mjs','/clean.css':'clean.css','/classic':'classic.html','/classic.html':'classic.html','/app.js':'app.js','/styles.css':'styles.css','/review.html':'review.html','/review/review.js':'review/review.js','/review/review.css':'review/review.css','/review/history.json':'review/history.json','/defense-zones.mjs':'defense-zones.mjs','/defense-zones.css':'defense-zones.css','/quick-picks.css':'quick-picks.css','/featured-picks-v316.css':'featured-picks-v316.css','/featured-picks-v316.mjs':'featured-picks-v316.mjs','/simple-dashboard-v318.mjs':'simple-dashboard-v318.mjs','/simple-dashboard-v318.css':'simple-dashboard-v318.css','/roto-name-v318.mjs':'roto-name-v318.mjs','/zone-v311.css':'zone-v311.css','/zone-league-v311.mjs':'zone-league-v311.mjs','/correlation-v312.mjs':'correlation-v312.mjs'};
   const zoneAssets={'/zone-metrics.mjs':'zone-metrics.mjs','/zone-opportunity-ui.mjs':'zone-opportunity-ui.mjs'};
   const name=files[pathname]||zoneAssets[pathname];if(!name)return json(res,{error:'Not found'},404);
   const dest=path.join(ROOT,'public',name);if(!existsSync(dest))return json(res,{error:'Not found'},404);

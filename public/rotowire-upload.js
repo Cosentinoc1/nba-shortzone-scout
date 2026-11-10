@@ -1,6 +1,7 @@
 /* NBA Scout · XLSX/CSV daily RotoWire importer. Parsing & session persistence happen
  * in the user's browser; the compact rows are POSTed for a transient analysis only.
  */
+import {findClientProjection,safeProjectionStat} from './roto-name-v318.mjs';
 const FILE_KEY='nbaScoutRotowireV19';
 const COLS=['NAME','Team','OPP','Pos','MIN','PTS','REB','AST','STL','BLK','TO','FGM','FGA','FG%','3PM','3PA','3P%','FTM','FTA','FT%','OREB','DREB'];
 const XML_NS='http://www.w3.org/2000/xmlns/';
@@ -96,11 +97,8 @@ function dateNow(){return document.getElementById('dateInput')?.value||''}
 function status(message,kind='neutral'){const el=document.getElementById('rtoStatus');if(el){el.hidden=false;el.dataset.kind=kind;el.textContent=message}}
 function activeForDate(){const pack=loadedPack();return pack?.date===dateNow()?pack:null}
 function rosterMatch(team,name){return `${String(team||'').toUpperCase()}:${String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase()}`}
-function getProjection(team,name){const pack=activeForDate();if(!pack)return null;return pack.rows.find(r=>rosterMatch(r.Team,r.NAME)===rosterMatch(team,name))||null}
-const projectionStat=(p,stat)=>{
- const map={PTS:['PTS'],REB:['REB'],AST:['AST'],FGA:['FGA'],'3PA':['3PA'],'3PM':['3PM'],FTM:['FTM'],PRA:['PTS','REB','AST'],PR:['PTS','REB'],PA:['PTS','AST'],RA:['REB','AST']};
- if(stat==='2PM')return Number(p.FGM)-Number(p['3PM']);const keys=map[stat]||[];return keys.length?keys.reduce((sum,k)=>sum+Number(p[k]),0):null;
-};
+function getProjection(team,name){const pack=activeForDate();return pack?findClientProjection(pack.rows,team,name):null}
+const projectionStat=(p,stat)=>safeProjectionStat(p,stat);
 window.NBAScoutRoto={getProjection,activeForDate,projectionStat};
 window.addEventListener('scout-board-loaded',()=>{
  const pack=activeForDate();if(pack){status(`RotoWire ${pack.rows.length} player projections loaded for ${pack.date} · ${new Date(pack.uploadedAt).toLocaleTimeString()} · this browser only`,'ok');window.dispatchEvent(new CustomEvent('scout-rotowire-data',{detail:pack}));}
@@ -116,7 +114,7 @@ if(input)input.addEventListener('change',async e=>{
   const data=toProjectionRows(rows),date=dateNow();if(!/^20\d{2}-\d{2}-\d{2}$/.test(date))throw Error('Select the NBA game day before importing');
   const pack={date,rows:data,uploadedAt:new Date().toISOString(),filename:file.name};
   if(!savePack(pack))status('Browser storage disabled: import is available in this open tab only','warning');
-  status(`${data.length} RotoWire players imported. Updating the Top 10 grades…`,'ok');
+  status(`${data.length} RotoWire rows imported for ${date}. Matching today’s NBA props…`,'ok');
   window.dispatchEvent(new CustomEvent('scout-rotowire-data',{detail:pack}));
  }catch(err){status('RotoWire import failed: '+err.message,'error')}
 });
