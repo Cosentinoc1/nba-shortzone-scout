@@ -97,3 +97,10 @@
 .recommendation-panel>p{font-size:13px;color:#cad5e6;line-height:1.6}
 .verdict-row{display:block;color:#ccf1bd;font-size:10px;font-weight:800;text-transform:uppercase;white-space:normal}
 @media(max-width:730px){.reason-columns,.explanation-cols{grid-template-columns:1fr}.decision-banner p{font-size:12px}}
+
+/* v3.15: actual last 10 / last 20 game selectors, works on narrow phones */
+.history-window-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.history-window-actions button{background:#17253c;color:#dce8f6;border:1px solid #455b78;border-radius:9px;padding:9px 14px;min-height:40px;font:inherit;cursor:pointer}
+.history-window-actions button[aria-pressed="true"]{background:#315b94;color:#fff;border-color:#7fb1f5;font-weight:700}
+.history-window-actions button:focus-visible{outline:2px solid #9fd1ff;outline-offset:2px}
+

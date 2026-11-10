@@ -1,7 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-09T05:00:00Z",
+  "updatedAt": "2026-11-10T05:51:58.575703+00:00",
   "days": [
+    {
+      "date": "2026-11-09",
+      "status": "not_frozen",
+      "scoringVersion": "RFPP 2.7 — freeze not available",
+      "message": "November 9 was NOT captured before tipoff: at 08:40 Central the live API returned HTTP 503. A later board had 235 standard lines but 0 ranked directions once the games were final. No exact original Top 10 exists to grade; a retrospective board must not be reported as pregame performance.",
+      "source": {
+        "site": "https://nba-shotzone-scout.onrender.com/",
+        "provider": "NBA Scout tracking check",
+        "observedAt": "2026-11-09 08:40 America/Chicago",
+        "providerSidesVerified": false
+      },
+      "snapshot": null,
+      "audit": null
+    },
     {
       "date": "2026-11-08",
       "status": "no_qualified",

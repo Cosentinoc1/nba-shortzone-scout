@@ -157,18 +157,35 @@ async function loadRoster(){if(state.rosters)return;try{const b=await request('/
  catch(e){$('researchResult').innerHTML=blank('Player directory unavailable',e.message)}}
 function onTeam(){const team=$('teamSelect').value;$('playerSelect').innerHTML='<option value="">Choose player</option>'+(state.rosters?.[team]||[]).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');let match=(state.data?.games||[]).find(g=>g.home===team||g.away===team);if(match)$('defSelect').value=match.away===team?match.home:match.away}
 function rowStat(name,label,value){return `<div class="metric"><b>${esc(value)}</b><small>${esc(label||name)}</small></div>`}
+function researchHistoryRows(res,line,side,count){
+ const rows=(res.recent20||res.recent||[]).slice(0,count);
+ return rows.map(row=>{const cls=row.stat===line?'push':(side==='MORE'?row.stat>line:row.stat<line)?'ok':'fail';
+  return `<tr><td>${esc(row.date)}</td><td>${esc(row.opponent)}</td><td class="${cls}">${esc(row.stat)}</td><td>${esc(row.minutes)}</td></tr>`;
+ }).join('')||'<tr><td colspan="4">No completed player appearances before the selected slate</td></tr>';
+}
 async function analyzePlayer(){const team=$('teamSelect').value,id=$('playerSelect').value,def=$('defSelect').value,line=Number($('lineInput').value),stat=$('statSelect').value,side=$('directionSelect').value;
  if(!team||!id||!def||team===def||$('lineInput').value===''){ $('researchResult').innerHTML=blank('Complete the research fields','Choose different offense and opponent teams, a player and the exact current line.');return}
  $('researchBtn').disabled=true;$('researchResult').innerHTML=blank('Analyzing player','Rebuilding prior-game evidence and shot-zone alignment…');
  try{const q=new URLSearchParams({offense:team,defense:def,playerId:id,line:String(line),stat,side,date:$('dateInput').value});const [res,match]=await Promise.all([request(`/api/research?${q}`),request(`/api/matchup?${new URLSearchParams({offense:team,defense:def,playerId:id})}`)]);
  const h=res.hitRates||{};let label=r=>r?.sample?`${r.win}/${r.sample} true wins · ${r.push} pushes`:'Not enough data';
  $('researchResult').innerHTML=`<article class="research-card"><span class="overline">RESEARCH REPORT</span><h3>${esc(res.player)} · ${esc(STAT[stat]||stat)} ${esc(side)}</h3><div class="matchup">${esc(team)} vs ${esc(def)} · exact line ${esc(line)}</div>
- <div class="metric-row">${rowStat('','LAST 5 AVG',human(res.last5Mean))}${rowStat('','LAST 10 AVG',human(res.last10Mean))}${rowStat('','SEASON AVG',human(res.seasonMean))}${rowStat('','BASELINE (NOT P-WIN)',human(res.projectedBaseline))}</div>
- <div class="metric-row">${rowStat('','LAST 5 HITS',label(h.last5))}${rowStat('','LAST 10 HITS',label(h.last10))}${rowStat('','H2H THIS SEASON',label(h.h2h))}${rowStat('','SHOT-ZONE MATCHUP',match.grade?.eligible?`${fmt(match.grade.score,0)}/100`:'Insufficient')}</div>
+ <div class="metric-row">${rowStat('','LAST 5 AVG',human(res.last5Mean))}${rowStat('','LAST 10 AVG',human(res.last10Mean))}${rowStat('','LAST 20 AVG',human(res.last20Mean))}${rowStat('','SEASON AVG',human(res.seasonMean))}${rowStat('','BASELINE (NOT P-WIN)',human(res.projectedBaseline))}</div>
+ <div class="metric-row">${rowStat('','LAST 5 HITS',label(h.last5))}${rowStat('','LAST 10 HITS',label(h.last10))}${rowStat('','LAST 20 HITS',label(h.last20))}${rowStat('','H2H THIS SEASON',label(h.h2h))}${rowStat('','SHOT-ZONE MATCHUP',match.grade?.eligible?`${fmt(match.grade.score,0)}/100`:'Insufficient')}</div>
  <div class="alert">${esc(res.lean)} · Role, injuries, independent minutes, tracking opportunities, exact live line and pricing still require verification. Shot-zone grade is descriptive.</div>
  <div class="tag-row"><span class="tag">Last 5 FGA ${esc(human(res.opportunity?.fgaL5))}</span><span class="tag">Last 5 3PA ${esc(human(res.opportunity?.tpaL5))}</span><span class="tag">Last 5 minutes ${esc(human(res.opportunity?.minutesL5))}</span></div>
- <h4>Recent games</h4><table class="history-table"><thead><tr><th>Date</th><th>Opponent</th><th>Stat</th><th>Minutes</th></tr></thead><tbody>${(res.recent||[]).map(row=>{let cls=row.stat===line?'push':(side==='MORE'?row.stat>line:row.stat<line)?'ok':'fail';return `<tr><td>${esc(row.date)}</td><td>${esc(row.opponent)}</td><td class="${cls}">${esc(row.stat)}</td><td>${esc(row.minutes)}</td></tr>`}).join('')}</tbody></table>
+ <h4>Recent played games <small id="researchHistoryCaption">Last 10 (before selected slate)</small></h4>
+ <div class="history-window-actions"><button type="button" data-research-count="10" aria-pressed="true">Last 10</button><button type="button" data-research-count="20" aria-pressed="false">Last 20</button></div>
+ ${res.historyFetch?.warning?`<p class="alert">Some ESPN historical games could not load: ${esc(res.historyFetch.warning)}</p>`:''}
+ <table class="history-table"><thead><tr><th>Date</th><th>Opponent</th><th>Stat</th><th>Minutes</th></tr></thead><tbody id="researchHistoryRows">${researchHistoryRows(res,line,side,10)}</tbody></table>
  <h4>Veto checklist</h4><ul>${(res.notes||[]).map(n=>`<li>${esc(n)}</li>`).join('')}</ul></article>`;
+ const historyBtns=$('researchResult').querySelectorAll('[data-research-count]');
+ historyBtns.forEach(btn=>btn.addEventListener('click',()=>{
+  const count=Number(btn.dataset.researchCount);
+  historyBtns.forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
+  $('researchHistoryRows').innerHTML=researchHistoryRows(res,line,side,count);
+  $('researchHistoryCaption').textContent=`Last ${Math.min(count,(res.recent20||res.recent||[]).length)} played games before the slate`;
+ }));
+ $('researchHistoryCaption').textContent=`Last ${Math.min(10,(res.recent20||res.recent||[]).length)} played games before the slate`;
  }catch(e){$('researchResult').innerHTML=blank('Could not complete analysis',e.message)}finally{$('researchBtn').disabled=false}
 }
 window.addEventListener('scout-rotowire-data',async event=>{

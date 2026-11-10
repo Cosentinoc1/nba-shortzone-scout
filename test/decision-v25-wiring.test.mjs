@@ -21,9 +21,9 @@ test('sourced explanation and backtest are visible',()=>{
  assert.match(read('scripts/update-review.mjs'),/sourceFresh/);
 });
 test('site identifies RFPP research v2.7 without claiming automatic betting',()=>{
- assert.match(read('server.mjs'),/version:'3\.13\.0'/);
+ assert.match(read('server.mjs'),/version:'3\.15\.0'/);
  assert.match(read('server.mjs'),/\/review\/history\.json/);
  assert.match(read('server.mjs'),/application\/json/);
  assert.match(read('lib/decision.mjs'),/2\.7-signal-ranked-research-final-veto-preserved/);
- assert.equal(JSON.parse(read('package.json')).version,'3.13.0');
+ assert.equal(JSON.parse(read('package.json')).version,'3.15.0');
 });

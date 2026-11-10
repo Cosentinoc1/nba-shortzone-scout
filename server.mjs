@@ -12,6 +12,7 @@ import {enrichBoardQuickReads} from './lib/quick-pick-explainer.mjs';
 import {checkDataQuality} from './lib/data-quality-v312.mjs';
 import {observePlatformLines} from './lib/line-movement-v312.mjs';
 import {researchPlayer,STATS} from './lib/research.mjs';
+import {parseHistoryBoxScore} from './lib/espn-history-v315.mjs';
 import {normalizeRows,parseCsv,rankBoard} from './lib/props.mjs';
 import {loadPropsFeed,feedStatusOnly} from './lib/propFeed.mjs';
 import {buildPropInsight} from './lib/insight.mjs';
@@ -30,7 +31,7 @@ const PORT=Number(process.env.PORT)||3000;
 let defense=snapshotDefense,players=snapshotPlayers,source='NBA official snapshot (2026-11-05)',dataAsOf='2026-11-05',schedule=[],scheduleDate=null,scheduleError=null;
 let gameCache={},profileCache={},dailySnapshots={},busy=false,refreshStage='',error=null,refreshLast=null,startedAt=new Date().toISOString(),lastAttempt=0,refreshStats={completedGames:0,usableGames:0,rejectedGames:0,unreconciledFga:0,unknownShots:0};
 let rosterNum=Object.values(rosters).reduce((n,x)=>n+x.length,0);
-const monthCache=new Map(),slateCache=new Map(),lookups=new Set();
+const monthCache=new Map(),slateCache=new Map(),lookups=new Set(),historyLookups=new Map();
 try{
  if(existsSync(CACHE)){const d=JSON.parse(await readFile(CACHE,'utf8'));gameCache=d.gameCache||{};profileCache=d.profileCache||{};dailySnapshots=d.dailySnapshots||{};
  if(d.defense?.teams?.length===30&&d.players?.length>250&&String(d.source||'').startsWith('ESPN')){
@@ -97,11 +98,47 @@ async function fetchGames(events,progress){const todo=events.filter(e=>gameCache
    }
  }));await saveCache();return {failed,requested:todo.length};
 }
+/** Lightweight historical refresh for player reports. In contrast to the background
+ * whole-league shot-zone rebuild, this fetches only the team's latest completed
+ * games strictly BEFORE the requested Chicago-local slate date. Box-only games
+ * cannot enter shot-zone analytics (schemaVersion 1 vs validated 2).
+ */
+async function ensureTeamHistory(team,day){
+ const key=team+'|'+day;
+ if(historyLookups.has(key))return historyLookups.get(key);
+ const promise=(async()=>{
+  const format=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'});
+  const completed=(await seasonEvents()).filter(ev=>
+   format.format(new Date(ev.date))<day && (ev.competitions?.[0]?.competitors||[])
+    .some(x=>normalizeTeam(x.team?.abbreviation)===team));
+  const window=completed.slice(-32);
+  let index=0,failures=[],boxOnly=0,validated=0;
+  const missing=window.filter(ev=>!Array.isArray(gameCache[String(ev.id)]?.players));
+  await Promise.all(Array.from({length:Math.min(4,missing.length)},async()=>{
+   while(index<missing.length){
+    const ev=missing[index++];
+    try{
+     const response=await fetchJson(`${BASE}/summary?event=${encodeURIComponent(ev.id)}`,14000);
+     try{gameCache[String(ev.id)]=parseESPNGame(ev,response);validated++}
+     catch(err){gameCache[String(ev.id)]=parseHistoryBoxScore(ev,response);boxOnly++}
+    }catch(err){failures.push(`${ev.id}: ${err.message}`)}
+   }
+  }));
+  if(missing.length!==failures.length)await saveCache();
+  return {status:failures.length?'partial':'loaded',team,day,available:window.filter(ev=>Array.isArray(gameCache[String(ev.id)]?.players)).length,
+   completedGamesInWindow:window.length,requested:missing.length,validated,boxOnly,failed:failures.length,
+   warning:failures.length?'Some ESPN game summaries could not be loaded. The played-game list may be incomplete.':null,
+   source:'ESPN final box scores, games strictly before selected slate; non-shot-zone fallback labeled'};
+ })();
+ historyLookups.set(key,promise);
+ try{return await promise}finally{historyLookups.delete(key)}
+}
+
 async function lookupPlayer(team,id){const k=profileKey(team,id),r=rosterFor(team,id);if(!r)throw new Error('Player not on selected roster');if(lookups.has(k))return;
  lookups.add(k);try{
   const events=(await seasonEvents()).filter(e=>(e.competitions?.[0]?.competitors||[]).some(c=>normalizeTeam(c.team?.abbreviation)===team));
   if(!events.length)throw new Error('No completed games found for selected team');
-  const {failed}=await fetchGames(events);const available=events.filter(ev=>gameCache[String(ev.id)]);
+  const {failed}=await fetchGames(events);const available=events.filter(ev=>gameCache[String(ev.id)]?.schemaVersion===2);
   if(!available.length)throw new Error(`No game data available; ${failed.length} requests failed`);
   const zs=Object.fromEntries(ZONES.map(z=>[z,{fgm:0,fga:0}]));let gp=0,latest='';
   for(const ev of available){let game=gameCache[String(ev.id)];let p=game.players.find(p=>p.id===id&&(p.team===team))||game.players.find(p=>p.team===team&&keyName(p.name)===keyName(r.name));if(!p)continue;
@@ -118,7 +155,7 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
  try{const ev=await seasonEvents();if(ev.length<20)throw new Error(`Only ${ev.length} completed games found`);
    refreshStage=`Checking ${ev.length} completed games`;
    const {failed}=await fetchGames(ev,(done,total)=>{refreshStage=`Validating games ${done}/${total}`});
-   const usable=ev.filter(e=>gameCache[String(e.id)]),coverage=usable.length/ev.length;
+   const usable=ev.filter(e=>gameCache[String(e.id)]?.schemaVersion===2),coverage=usable.length/ev.length;
    // Promote a clearly labeled PARTIAL league sample only when there is strong
    // broad-season coverage; retain last verified snapshot otherwise.
    if(usable.length<60||coverage<0.85)throw new Error(`${usable.length}/${ev.length} games usable; requires ≥85% of schedule and ≥60 games. First failure: ${failed[0]||'unavailable'}`);
@@ -137,7 +174,7 @@ async function fullRefresh(){if(busy)return;busy=true;lastAttempt=Date.now();err
    await saveCache();
  }catch(e){error=e.message;refreshStage='Retained validated snapshot';console.warn('Refresh:',e.message)}finally{busy=false}
 }
-function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'3.13.0',dataQuality:checkDataQuality({defense,players,rosters,asOf:dataAsOf,source}),researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
+function status(){const allProfiles=new Set(players.map(p=>p.team+':'+keyName(p.name)));for(const p of Object.values(profileCache))allProfiles.add(p.team+':'+keyName(p.name));const rosterProfileCount=Object.entries(rosters).reduce((n,[team,list])=>n+list.filter(r=>allProfiles.has(team+':'+keyName(r.name))).length,0);return {serving:true,version:'3.15.0',dataQuality:checkDataQuality({defense,players,rosters,asOf:dataAsOf,source}),researchCacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length,startedAt,date:localDate(),source,dataAsOf,playerProfiles:players.length,rosterProfiles:rosterProfileCount,profileCoveragePct:+(100*rosterProfileCount/rosterNum).toFixed(1),espnProfiles:Object.keys(profileCache).length,rosters:Object.keys(rosters).length,rosterPlayers:rosterNum,scheduleDate,scheduleGames:schedule.length,scheduleError,refresh:{active:busy,stage:refreshStage,lastSuccess:refreshLast,error,stats:refreshStats},onDemandLookups:lookups.size,officialZonesAreExact:!source.startsWith('ESPN')}}
 function json(res,obj,statusCode=200){res.writeHead(statusCode,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(obj))}
 function requireTeam(code){const t=normalizeTeam(code);return rosters[t]?t:null}
 const quickZoneCache=new Map();
@@ -210,9 +247,13 @@ async function handler(req,res){
     const opponent=found?(found.home===team?found.away:found.home):null;
     let ctx={injuries:[],games:[],source:'ESPN data unavailable',error:'External context not yet available'};
     try{ctx=await externalContextForDay(day,Object.keys(rosters))}catch(e){ctx.error=String(e.message||e)}
+    let historyFetch=null;
+    if((rosters[team]||[]).some(p=>keyName(p.name)===keyName(name))) {
+     try{historyFetch=await ensureTeamHistory(team,day)}catch(e){historyFetch={status:'unavailable',warning:e.message}};
+    }
     const result=buildPropInsight({gameCache,rosters,players,defense,day,team,opponent,playerName:name,line,market,tier,observedAt,expectedMinutes:minutes,
      context:{...ctx,game:ctx.games?.find(g=>g.id===found?.id||(g.away===team||g.home===team))||null}});
-    return json(res,result);
+    return json(res,{...result,historyFetch});
    }
 
   if(pathname==='/api/picks'&&req.method==='GET'){
@@ -269,8 +310,10 @@ async function handler(req,res){
    if(u.searchParams.has('line')){line=Number(u.searchParams.get('line'));if(!Number.isFinite(line)||line<0||line>300)return json(res,{error:'Invalid exact line'},400)}
    if(u.searchParams.has('expectedMinutes')){minutes=Number(u.searchParams.get('expectedMinutes'));if(!Number.isFinite(minutes)||minutes<1||minutes>48)return json(res,{error:'Invalid projected minutes'},400)}
    const roster=rosterFor(offense,id);
+   let historyFetch=null;
+   try{historyFetch=await ensureTeamHistory(offense,day)}catch(e){historyFetch={status:'unavailable',warning:e.message}};
    const result=researchPlayer({gameCache,offense,defense:opponent,playerId:id,playerName:roster.name,stat,side,line,expectedMinutes:minutes,day});
-   return json(res,{...result,dataAsOf,seasonSource:'ESPN box scores · stats available only after v1.4 history refresh',cacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length});
+   return json(res,{...result,dataAsOf,seasonSource:'ESPN box scores · last 10/20 pre-slate player appearances; loaded on demand',historyFetch,cacheGames:Object.values(gameCache).filter(g=>g.schemaVersion===2).length});
   }
   if(pathname==='/api/accuracy'){
    const day=u.searchParams.get('date')||new Date(Date.now()-86400000).toLocaleDateString('en-CA',{timeZone:'America/Chicago'});
@@ -296,7 +339,7 @@ async function handler(req,res){
    if(!team||!offense||team===offense||!id)return json(res,{error:'Select two distinct valid teams and a player ID'},400);
    const profile=profileFor(offense,id),def=defense.teams.find(x=>x.code===team);if(!rosterFor(offense,id))return json(res,{error:'Player not on offense roster'},404);
    if(!profile)return json(res,{profile:null,grade:null,state:lookups.has(profileKey(offense,id))?'loading':'unavailable',source:status()});
-   const recent=Object.values(gameCache).filter(g=>g.teams?.includes(offense)).sort((a,b)=>a.date.localeCompare(b.date)).map(g=>g.players?.find(x=>x.team===offense&&(String(x.id)===String(id)||keyName(x.name)===keyName(profile.name)))).filter(Boolean);
+   const recent=Object.values(gameCache).filter(g=>g?.schemaVersion===2&&g.teams?.includes(offense)).sort((a,b)=>a.date.localeCompare(b.date)).map(g=>g.players?.find(x=>x.team===offense&&(String(x.id)===String(id)||keyName(x.name)===keyName(profile.name)))).filter(Boolean);
    const reqMinutes=u.searchParams.get('expectedMinutes'),min=reqMinutes===null?null:Number(reqMinutes);
    const expectedMinutes=Number.isFinite(min)&&min>=1&&min<=48?min:null;
    const roleVerified=u.searchParams.get('roleVerified')==='true';
