@@ -1,13 +1,15 @@
 {
   "name": "nba-zone-matchup-scout",
-  "version": "3.15.0",
-  "description": "NBA Scout v3.15: corrected GitHub auto-installer, on-demand ESPN player last 10/20 history, reliable review capture",
+  "version": "3.17.0",
+  "description": "NBA Scout v3.17 corrected incremental ZIP installer, video-informed Top 2/5, real opportunity and sourced matchup reports",
   "private": true,
   "type": "module",
-  "engines": {"node": ">=20"},
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.mjs",
-    "pretest": "python3 PATCH_SCOUT_314.py && python3 PATCH_SCOUT_315.py",
+    "pretest": "python3 PATCH_SCOUT_317.py",
     "test": "node --test test/*.test.mjs",
     "dev": "node --watch server.mjs"
   },

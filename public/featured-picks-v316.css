@@ -1,0 +1,53 @@
+/* NBA Scout v3.16 — two clear, source-attributed top picks; no false certainty. */
+#featuredPicks{margin:18px 0 26px;background:linear-gradient(135deg,#16263a,#102034);border:1px solid #496581;border-radius:18px;padding:20px;color:#e9f2fd}
+.fp-header{display:flex;gap:18px;justify-content:space-between;align-items:end}
+.fp-overline{font-size:11px;font-weight:900;letter-spacing:1.3px;color:#b8d5ff}
+.fp-header h2{font-size:clamp(24px,3.5vw,32px);margin:5px 0 7px;letter-spacing:-.8px;color:#f0f7ff}
+.fp-header h2 em{font-weight:400;color:#afc3df}
+.fp-header p{font-size:13px;line-height:1.5;color:#b5c8df;margin:0;max-width:620px}
+.fp-switch{display:flex;background:#0d1927;border:1px solid #4a637d;padding:3px;border-radius:12px;flex-shrink:0}
+.fp-switch button{background:transparent;border:0;border-radius:8px;color:#b3c5dc;padding:11px 16px;font-weight:800;cursor:pointer}
+.fp-switch button[aria-pressed=true]{background:#355b84;color:#fff}
+.fp-switch button:focus-visible,.fp-full:focus-visible{outline:2px solid #b6dbff;outline-offset:2px}
+.fp-caution{border-left:3px solid #a9b7cc;background:#1c2b3b;border-radius:6px;margin:17px 0;padding:10px 13px}
+.fp-caution strong{font-size:13px;color:#f1f6fe}.fp-caution p{color:#b7c8da;font-size:12px;line-height:1.55;margin:4px 0 0}
+.fp-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.fp-card{border:1px solid #47627d;border-radius:14px;background:#152338;padding:15px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.fp-card-top{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:10px;font-weight:800;letter-spacing:.3px}
+.fp-rank{color:#c4d7f1}.fp-evidence{color:#bfd6b3}
+.fp-person h3{font-size:21px;line-height:1.25;margin:0 0 4px;color:#fff}.fp-person p{margin:0;color:#a6bad2;font-size:11px}
+.fp-pick{border:1px solid #3c5772;border-radius:10px;background:#0e1d2e;display:flex;gap:11px;padding:12px;align-items:center}
+.fp-side{padding:8px 11px;border-radius:7px;font-size:12px;font-weight:900}.fp-more{background:#244d3a;color:#c4f9d4}.fp-less{background:#493f60;color:#e7d7ff}
+.fp-pick b{display:block;color:#fff;font-size:18px}.fp-pick span span,.fp-pick div>span{font-size:10px;color:#9fb2c8}
+.fp-status{padding:9px 11px;background:#343341;border-radius:8px;border-left:3px solid #d4ad76}.fp-status strong{display:block;font-size:12px;color:#ffe5be}.fp-status span{display:block;font-size:11px;color:#d0c4b3;margin-top:4px}
+.fp-status.fp-approved{background:#213d31;border-left-color:#9bdb9f}.fp-status.fp-approved strong{color:#c3edc9}
+.fp-reasons{display:grid;gap:7px}.fp-reason{background:#1c3048;border:1px solid #334d6a;border-radius:9px;padding:10px}
+.fp-reason strong{font-size:12px;color:#d6e8ff}.fp-reason p{font-size:12px;line-height:1.55;color:#e2ebf7;margin:5px 0}.fp-reason small{font-size:10px;color:#92abc7}
+.fp-reason.fp-support{border-left:3px solid #a6cf99}.fp-reason.fp-caution{border-left:3px solid #e5a2a2}
+.fp-bottom{margin-top:auto;display:grid;gap:9px}.fp-risk{border-top:1px solid #3b5268;padding-top:10px}.fp-risk b{font-size:12px;color:#ffe1bd}.fp-risk p{font-size:12px;color:#d0d9e8;line-height:1.5;margin:5px 0}
+.fp-checks summary{font-size:12px;color:#d9eaff;cursor:pointer;font-weight:800}.fp-checks ul{font-size:11px;color:#bacbdb;line-height:1.65;padding-left:17px;margin:8px 0}
+.fp-full{background:#284c72;border:1px solid #668bb3;color:#f4f9ff;padding:11px 13px;border-radius:9px;font-weight:800;cursor:pointer}
+.fp-full:hover{background:#356289}.fp-note{font-size:11px;line-height:1.6;color:#98b0c8;margin:12px 0 0}.fp-empty{grid-column:1/-1;background:#1c2c40;padding:15px;border-radius:9px;font-size:13px;color:#c5d8eb}
+@media(max-width:800px){#featuredPicks{padding:13px}.fp-header{align-items:stretch;flex-direction:column;gap:12px}.fp-switch{width:max-content}.fp-cards{grid-template-columns:1fr}.fp-person h3{font-size:19px}}
+/* Source completeness and immediately scannable live method fields. */
+.fp-stat-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fp-stat-strip>div{background:#0d1c2b;border:1px solid #344b63;border-radius:9px;padding:9px;min-width:0}
+.fp-stat-strip b{font-size:14px;color:#ebf5ff;display:block}.fp-stat-strip small{font-size:9px;color:#9badc1;line-height:1.4;display:block;margin-top:4px}
+.fp-risk ul{font-size:11px;line-height:1.6;color:#d0d9e8;margin:6px 0 0;padding-left:17px}
+.fp-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:10px 0}
+.fp-source{display:grid;grid-template-columns:1fr auto;gap:3px;background:#112337;border:1px solid #39516a;border-radius:7px;padding:9px}
+.fp-source strong{font-size:10px;color:#e7f4ff}.fp-source-state{font-size:9px;font-weight:800;white-space:nowrap}
+.fp-source-ok{color:#a5e0ac}.fp-source-proxy{color:#f3d49b}.fp-source-missing{color:#ffa5a5}
+.fp-source small{grid-column:1/-1;font-size:9px;color:#95aabe;line-height:1.4}
+.fp-source-disclaimer,.fp-source-links{font-size:10px;color:#aebed0;line-height:1.55}
+.fp-source-links{padding-top:10px;border-top:1px solid #33485f;margin-top:9px}.fp-source-links a{color:#b7dfff;text-decoration:underline}
+@media(max-width:560px){.fp-sources{grid-template-columns:1fr}.fp-stat-strip b{font-size:12px}.fp-stat-strip small{font-size:8px}}
+/* All-slate source-health inspector, rendered even on a passed/no-picks day. */
+#sourcePulse{margin:8px 0 18px}.fp-source-pulse{background:#14263a;border:1px solid #425d76;border-radius:10px;padding:10px}
+.fp-source-pulse summary{font-size:12px;cursor:pointer;color:#d8e9fa}.fp-source-pulse summary span{font-size:10px;color:#a4bad0;margin-left:6px}
+.fp-pulse-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:12px 0}
+.fp-pulse-row{display:grid;grid-template-columns:auto 1fr auto;gap:4px;align-items:start;background:#101e2f;border:1px solid #34495d;border-radius:6px;padding:9px}
+.fp-pulse-row b{font-size:11px}.fp-pulse-label{font-size:8px;color:#aec6e3;font-weight:800}.fp-pulse-row small{font-size:9px;line-height:1.45;color:#93abc2;grid-column:2/-1}
+.fp-pulse-dot{border-radius:50%;width:7px;height:7px;background:#e69a96;margin-top:4px}.fp-pulse-dot.ok{background:#9bddaa}.fp-pulse-dot.partial{background:#dec18b}
+.fp-pulse-note{font-size:10px;line-height:1.5;color:#a2b4c7;margin:5px}
+@media(max-width:640px){.fp-pulse-grid{grid-template-columns:1fr}.fp-source-pulse summary span{display:block;margin:3px 0 0}}

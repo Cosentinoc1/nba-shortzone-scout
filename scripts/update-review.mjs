@@ -71,6 +71,13 @@ async function capture() {
     await save();console.warn(`${target}: pretip fetch failed: ${error.message}`);return;
   }
   const pickList = pretipCandidates(board, now);
+  const fromFeatured = list => (Array.isArray(list) ? list : []).filter(p =>
+    p?.team && p?.opponent && p?.player && Number.isFinite(Number(p.line)) &&
+    ['MORE','LESS'].includes(p.side) && Date.parse(p.gameTipoff||'') > now.getTime()+5*60000
+  ).map(p => ({board:'Featured Top 5',player:p.player,team:p.team,opponent:p.opponent,stat:p.stat,
+    side:p.side,line:Number(p.line),rank:p.rank||null,detailKey:p.detailKey,
+    pregameResearchStatus:p.entryStatus||'NOT APPROVED',quality:p.confidence||null}));
+  const featured={top2:fromFeatured(board.featuredPicks?.top2),top5:fromFeatured(board.featuredPicks?.top5)};
   const directional = pickList.filter(p => p.board !== 'Bottom 10');
   const freshness = board.feed?.freshness || {};
   const sourceFresh = freshness.status === 'fresh' && Number(freshness.ageMinutes) <= 120;
@@ -93,7 +100,7 @@ async function capture() {
     const day = {date:target,status:'frozen',scoringVersion:board.scoringVersion||'RFPP 2.7',
       message:`Captured ${directional.length} directional research picks before their games. Some earlier games may be excluded. Not betting approvals.`,
       source,observedBoard,
-      snapshot:{capturedAt:now.toISOString(), qualified, picks:pickList, gameCount:timing.games,
+      snapshot:{capturedAt:now.toISOString(), qualified, picks:pickList, featured, gameCount:timing.games,
         pretipVerified:true, pretipGames:timing.beforeTip, totalGames:timing.games},
       audit:findDay()?.audit || null};
     putDay(day);
@@ -116,7 +123,8 @@ async function grade() {
   }
   const summaryCache = new Map();
   const picks = [];
-  for (const p of day.snapshot.picks) {
+  const featuredInput=Array.isArray(day.snapshot.featured?.top5)?day.snapshot.featured.top5:[];
+  for (const p of [...day.snapshot.picks,...featuredInput]) {
     const event = teamEvents.get(String(p.team).toUpperCase());
     const teams = (event?.competitions?.[0]?.competitors || []).map(c => String(c.team?.abbreviation||'').toUpperCase());
     if (!event || !teams.includes(p.opponent)) {
@@ -136,9 +144,16 @@ async function grade() {
     if (!player) {picks.push({...p,result:'UNVERIFIED',actual:null,notes:'Player was not uniquely matched to the official team box score; do not assume DNP'});continue;}
     picks.push(gradePick(p,player));
   }
+  const featuredResults=picks.filter(p=>p.board==='Featured Top 5');
+  const originalResults=picks.filter(p=>p.board!=='Featured Top 5');
+  const top2Keys=new Set((day.snapshot.featured?.top2||[]).map(p=>p.detailKey));
+  const featuredTop2=featuredResults.filter(p=>top2Keys.has(p.detailKey));
   const pending = picks.some(p => ['PENDING','UNVERIFIED'].includes(p.result));
   day.audit = {gradedAt:new Date().toISOString(),source:'ESPN official final NBA box scores',
-    picks,summary:summaries(picks),allGamesFinal:events.every(e=>e.status?.type?.completed)};
+    picks:originalResults,summary:summaries(originalResults),
+    featured:{top2:featuredTop2,top5:featuredResults,
+      resultsOnly:true,pregameVerified:day.snapshot?.pretipVerified===true},
+    allGamesFinal:events.every(e=>e.status?.type?.completed)};
   day.status = pending ? 'partial' : 'audited';
   day.message = pending ? 'Partial review: unresolved picks excluded from hit-rate calculations; will retry.' : 'Official postgame box-score audit completed';
   putDay(day);await save();

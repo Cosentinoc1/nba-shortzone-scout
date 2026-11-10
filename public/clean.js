@@ -1,5 +1,6 @@
 /* NBA Scout v1.5: minimal, source-aware, mobile-first research desk. */
 import {defenseView} from './defense-ui.mjs';
+import {renderFeaturedPicks,renderSourcePulse} from './featured-picks-v316.mjs';
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const state={data:null,game:'ALL',side:'ALL',rosters:null,feedMode:'remote',lastFile:null,lines:null,gradeVisible:[],gradeLimit:80};
@@ -49,6 +50,8 @@ function renderPicks(){
  const source=data.feed?.source||'Imported CSV',count=data.boardCount||0;const rw=data.rotowireStatus;
  $('pickSummary').textContent=`${count} standard lines · ${data.matched||0} scored directions · ${data.qualified||0} eligible · ${source}${rw?' · RotoWire '+rw.playerRows+' player projections':''}${stale?' · STALE': ''}${data.dataQuality?.structuralOk===false?' · DEFENSIVE DATA INCONSISTENT':data.dataQuality?.playerTeamCoverage<30?' · PLAYER ZONES PARTIAL': ''}`;
  $('listTag').textContent=stale?'STALE LINES':state.side==='WORST'?'Tough defensive matchups · not automatic unders':'Source-aware research · NOT final bets';
+ renderSourcePulse(data);
+ renderFeaturedPicks(data,c=>window.dispatchEvent(new CustomEvent('scout-open-insight',{detail:c}))); 
  if(!selected.length){
   $('picksGrid').innerHTML=blank('No qualifying research directions for this game day','Check the selected game date and pregame offers. Missing RotoWire alone no longer deletes research candidates; no forced 10.');
   if(Number(data.skips?.outOfSlate||0)>0 && Number(data.matched||0)===0){
