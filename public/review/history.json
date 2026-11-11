@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-10T21:16:04.385Z",
+  "updatedAt": "2026-11-11T02:42:35.604Z",
   "days": [
     {
       "date": "2026-11-10",
-      "status": "not_frozen",
+      "status": "no_qualified",
       "scoringVersion": "RFPP 2.7",
-      "message": "Pregame capture failed (The operation was aborted due to timeout). Retry scheduled; no picks or result percentage can be claimed.",
+      "message": "No eligible ranked pre-tip picks among 465 observed lines / 464 scored directions; not a 0% result.",
       "source": {
         "site": "https://nba-shotzone-scout.onrender.com",
-        "provider": "NBA Scout /api/picks",
-        "observedAt": "2026-11-10T21:15:36.326Z",
+        "provider": "ParlayAPI · PrizePicks NBA",
+        "observedAt": "2026-11-11T02:41:25.000Z",
         "providerSidesVerified": false
       },
       "snapshot": null,
@@ -20,10 +20,22 @@
           "at": "2026-11-10T21:15:36.326Z",
           "status": "not_frozen",
           "message": "Pregame capture failed (The operation was aborted due to timeout). Retry scheduled; no picks or result percentage can be claimed."
+        },
+        {
+          "at": "2026-11-11T02:42:14.666Z",
+          "status": "no_qualified",
+          "message": "No eligible ranked pre-tip picks among 465 observed lines / 464 scored directions; not a 0% result."
         }
       ],
-      "captureAttempts": 1,
-      "observedBoard": null
+      "captureAttempts": 2,
+      "observedBoard": {
+        "standardLines": 465,
+        "matchedDirections": 464,
+        "qualifiedDirections": 0,
+        "pretipGames": 2,
+        "games": 6,
+        "feedFresh": true
+      }
     },
     {
       "date": "2026-11-09",
