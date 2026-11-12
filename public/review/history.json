@@ -1,7 +1,988 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-12T03:45:24.879Z",
+  "updatedAt": "2026-11-12T21:49:26.669Z",
   "days": [
+    {
+      "date": "2026-11-12",
+      "status": "frozen",
+      "scoringVersion": "2.7-signal-ranked-research-final-veto-preserved",
+      "message": "Captured 20 directional research picks before their games. Some earlier games may be excluded. Not betting approvals.",
+      "source": {
+        "site": "https://nba-shotzone-scout.onrender.com",
+        "provider": "ParlayAPI · PrizePicks NBA",
+        "observedAt": "2026-11-12T21:48:44.000Z",
+        "providerSidesVerified": false
+      },
+      "observedBoard": {
+        "standardLines": 321,
+        "matchedDirections": 642,
+        "qualifiedDirections": 145,
+        "pretipGames": 4,
+        "games": 4,
+        "feedFresh": true
+      },
+      "snapshot": {
+        "capturedAt": "2026-11-12T21:49:09.429Z",
+        "qualified": 145,
+        "picks": [
+          {
+            "board": "Top 10 MORE",
+            "rank": 1,
+            "player": "P.J. Washington",
+            "team": "DAL",
+            "opponent": "MIN",
+            "stat": "PTS",
+            "side": "MORE",
+            "line": 12.5,
+            "grade": 60,
+            "tier": "LEAN",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 10 median 15.5 beats the 12.5 line for MORE; 0.4 volatility-adjusted units.",
+              "6/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 56.3%.",
+              "Opportunity supports MORE: L5 vs previous L5 per-36 FGA -14.8%, FTA +60%.",
+              "Stable recent playing time: 34 minutes (L5 CV 14.6%)."
+            ],
+            "risks": [],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 2,
+            "player": "Duncan Robinson",
+            "team": "DET",
+            "opponent": "WAS",
+            "stat": "PR",
+            "side": "MORE",
+            "line": 17.5,
+            "grade": 59,
+            "tier": "LEAN",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 4,
+            "signals": [
+              "Last 10 median 22 beats the 17.5 line for MORE; 0.8 volatility-adjusted units.",
+              "7/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 62.5%.",
+              "Opportunity supports MORE: L5 vs previous L5 per-36 PTS +15.9%, REB +25.9% (production proxies, not tracked chances).",
+              "Stable recent playing time: 31.2 minutes (L5 CV 13.4%).",
+              "WAS position-specific defense favors MORE (72/100 estimated position)."
+            ],
+            "risks": [
+              "MORE lower-tail warning: 25th percentile 15.8 sits below 17.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 3,
+            "player": "Terrence Shannon Jr.",
+            "team": "MIN",
+            "opponent": "DAL",
+            "stat": "AST",
+            "side": "MORE",
+            "line": 1.5,
+            "grade": 58,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 8 median 2.5 beats the 1.5 line for MORE; 0.7 volatility-adjusted units.",
+              "6/8 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 64.3%.",
+              "Opportunity supports MORE: L5 vs previous L5 per-36 AST +60% (production proxies, not tracked chances)."
+            ],
+            "risks": [
+              "Limited recent playing time: 21.4 minutes L5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 4,
+            "player": "Anthony Davis",
+            "team": "WAS",
+            "opponent": "DET",
+            "stat": "PR",
+            "side": "MORE",
+            "line": 31.5,
+            "grade": 57,
+            "tier": "WATCH",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 10 median 36 beats the 31.5 line for MORE; 0.4 volatility-adjusted units.",
+              "7/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 62.5%.",
+              "Opportunity supports MORE: L5 vs previous L5 per-36 PTS +33.4%, REB +39.3% (production proxies, not tracked chances).",
+              "Stable recent playing time: 33.2 minutes (L5 CV 4.8%)."
+            ],
+            "risks": [
+              "Back-to-back: possible role, minutes, or efficiency drag.",
+              "MORE lower-tail warning: 25th percentile 27.3 sits below 31.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 5,
+            "player": "Ausar Thompson",
+            "team": "DET",
+            "opponent": "WAS",
+            "stat": "PTS",
+            "side": "MORE",
+            "line": 10.5,
+            "grade": 57,
+            "tier": "WATCH",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Opportunity supports MORE: L5 vs previous L5 per-36 FGA +21%, FTA +54.8%.",
+              "Stable recent playing time: 27.6 minutes (L5 CV 12.5%).",
+              "WAS position-specific defense favors MORE (67/100 estimated position)."
+            ],
+            "risks": [
+              "MORE lower-tail warning: 25th percentile 7 sits below 10.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 6,
+            "player": "Ayo Dosunmu",
+            "team": "MIN",
+            "opponent": "DAL",
+            "stat": "PTS",
+            "side": "MORE",
+            "line": 18,
+            "grade": 65,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 1,
+            "signals": [
+              "Opportunity supports MORE: L5 vs previous L5 per-36 FGA +25.9%, FTA +60%.",
+              "Stable recent playing time: 35.6 minutes (L5 CV 9.2%).",
+              "Paint (non-RA): allowed shot share +2.6 pp vs NBA; opponent FG% +3.9 pp vs NBA (243 attempts). Supports MORE."
+            ],
+            "risks": [
+              "MORE lower-tail warning: 25th percentile 14.3 sits below 18."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 7,
+            "player": "Jaden McDaniels",
+            "team": "MIN",
+            "opponent": "DAL",
+            "stat": "REB",
+            "side": "MORE",
+            "line": 5,
+            "grade": 57,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 6 beats the 5 line for MORE; 0.6 volatility-adjusted units.",
+              "9/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 75%.",
+              "Stable recent playing time: 35.6 minutes (L5 CV 11.5%)."
+            ],
+            "risks": [],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 8,
+            "player": "Kyshawn George",
+            "team": "WAS",
+            "opponent": "DET",
+            "stat": "PRA",
+            "side": "MORE",
+            "line": 22.5,
+            "grade": 57,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 10 median 29 beats the 22.5 line for MORE; 0.8 volatility-adjusted units.",
+              "7/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 62.5%.",
+              "Opportunity supports MORE: L5 vs previous L5 per-36 PTS +21.4%, REB +19.3%, AST +5.8% (production proxies, not tracked chances).",
+              "Stable recent playing time: 35.6 minutes (L5 CV 9.3%)."
+            ],
+            "risks": [
+              "Back-to-back: possible role, minutes, or efficiency drag."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 9,
+            "player": "Tyrese Maxey",
+            "team": "PHI",
+            "opponent": "TOR",
+            "stat": "3PM",
+            "side": "MORE",
+            "line": 2.5,
+            "grade": 57,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 3 beats the 2.5 line for MORE; 0.5 volatility-adjusted units.",
+              "7/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 62.5%.",
+              "Stable recent playing time: 34.4 minutes (L5 CV 4.4%)."
+            ],
+            "risks": [],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 MORE",
+            "rank": 10,
+            "player": "Alex Sarr",
+            "team": "WAS",
+            "opponent": "DET",
+            "stat": "REB",
+            "side": "MORE",
+            "line": 7,
+            "grade": 56,
+            "tier": "WATCH",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 4,
+            "signals": [
+              "Last 10 median 8 beats the 7 line for MORE; 0.3 volatility-adjusted units.",
+              "6/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 56.3%.",
+              "Opportunity supports MORE: L5 vs previous L5 per-36 REB +60% (production proxies, not tracked chances).",
+              "Stable recent playing time: 26.2 minutes (L5 CV 9.5%).",
+              "DET position-specific defense favors MORE (95/100)."
+            ],
+            "risks": [
+              "Back-to-back: possible role, minutes, or efficiency drag.",
+              "MORE lower-tail warning: 25th percentile 4.5 sits below 7."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 1,
+            "player": "VJ Edgecombe",
+            "team": "PHI",
+            "opponent": "TOR",
+            "stat": "PRA",
+            "side": "LESS",
+            "line": 23.5,
+            "grade": 55,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 10 median 22.5 beats the 23.5 line for LESS; 0.2 volatility-adjusted units.",
+              "6/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 56.3%.",
+              "Stable recent playing time: 33.4 minutes (L5 CV 4.1%).",
+              "TOR position-specific defense favors LESS (64/100 estimated position)."
+            ],
+            "risks": [
+              "Restricted area: allowed shot share +2.3 pp vs NBA; opponent FG% +4.7 pp vs NBA (289 attempts). Opposes LESS. Applies ONLY to the scoring component."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 2,
+            "player": "LaMelo Ball",
+            "team": "MIN",
+            "opponent": "DAL",
+            "stat": "AST",
+            "side": "LESS",
+            "line": 6.5,
+            "grade": 58,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 4,
+            "signals": [
+              "Last 10 median 6 beats the 6.5 line for LESS; 0.3 volatility-adjusted units.",
+              "6/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 56.3%.",
+              "Opportunity supports LESS: L5 vs previous L5 per-36 AST -37.5% (production proxies, not tracked chances).",
+              "Stable recent playing time: 29.8 minutes (L5 CV 17.4%).",
+              "DAL position-specific defense favors LESS (79/100 estimated position)."
+            ],
+            "risks": [
+              "LESS upper-tail warning: 75th percentile 7.8 sits above 6.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 3,
+            "player": "Tyrese Maxey",
+            "team": "PHI",
+            "opponent": "TOR",
+            "stat": "RA",
+            "side": "LESS",
+            "line": 9.5,
+            "grade": 58,
+            "tier": "LEAN",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 8 beats the 9.5 line for LESS; 0.6 volatility-adjusted units.",
+              "8/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 68.8%.",
+              "Stable recent playing time: 34.4 minutes (L5 CV 4.4%)."
+            ],
+            "risks": [
+              "Opportunity trends oppose LESS: L5 vs previous L5 per-36 REB -38.3%, AST +60% (production proxies, not tracked chances)."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 4,
+            "player": "Dean Wade",
+            "team": "PHI",
+            "opponent": "TOR",
+            "stat": "RA",
+            "side": "LESS",
+            "line": 7.5,
+            "grade": 57,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 4.5 beats the 7.5 line for LESS; 0.8 volatility-adjusted units.",
+              "8/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 68.8%."
+            ],
+            "risks": [
+              "Limited recent playing time: 21.4 minutes L5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 5,
+            "player": "Moussa Diabaté",
+            "team": "CHA",
+            "opponent": "PHX",
+            "stat": "REB",
+            "side": "LESS",
+            "line": 9,
+            "grade": 57,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 9 median 8 beats the 9 line for LESS; 0.3 volatility-adjusted units.",
+              "5/7 resolved recent games cleared LESS (pushes 2); small-sample-adjusted clearance 61.5%.",
+              "Opportunity supports LESS: L5 vs previous L5 per-36 REB -9% (production proxies, not tracked chances).",
+              "Stable recent playing time: 29.4 minutes (L5 CV 12.3%)."
+            ],
+            "risks": [],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 6,
+            "player": "Devin Booker",
+            "team": "PHX",
+            "opponent": "CHA",
+            "stat": "RA",
+            "side": "LESS",
+            "line": 8,
+            "grade": 56,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "5/8 resolved recent games cleared LESS (pushes 2); small-sample-adjusted clearance 57.1%.",
+              "Opportunity supports LESS: L5 vs previous L5 per-36 REB -46.5%, AST -8% (production proxies, not tracked chances).",
+              "Stable recent playing time: 33 minutes (L5 CV 11.3%)."
+            ],
+            "risks": [
+              "LESS upper-tail warning: 75th percentile 8.8 sits above 8."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 7,
+            "player": "Cade Cunningham",
+            "team": "DET",
+            "opponent": "WAS",
+            "stat": "AST",
+            "side": "LESS",
+            "line": 8.5,
+            "grade": 55,
+            "tier": "WATCH",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 8 beats the 8.5 line for LESS; 0.3 volatility-adjusted units.",
+              "9/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 75%.",
+              "Stable recent playing time: 32 minutes (L5 CV 18%)."
+            ],
+            "risks": [
+              "Opponent DvP is unfavorable for LESS (31/100 position estimate)."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 8,
+            "player": "Grayson Allen",
+            "team": "CHA",
+            "opponent": "PHX",
+            "stat": "RA",
+            "side": "LESS",
+            "line": 7.5,
+            "grade": 55,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 5.5 beats the 7.5 line for LESS; 0.7 volatility-adjusted units.",
+              "8/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 68.8%.",
+              "Stable recent playing time: 26.4 minutes (L5 CV 20.4%)."
+            ],
+            "risks": [],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 9,
+            "player": "Naz Reid",
+            "team": "CHA",
+            "opponent": "PHX",
+            "stat": "3PM",
+            "side": "LESS",
+            "line": 2.5,
+            "grade": 55,
+            "tier": "WATCH",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 10 median 2 beats the 2.5 line for LESS; 0.4 volatility-adjusted units.",
+              "7/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 62.5%.",
+              "Opportunity supports LESS: L5 vs previous L5 per-36 TPA -12.7%.",
+              "Stable recent playing time: 31.4 minutes (L5 CV 13.6%)."
+            ],
+            "risks": [
+              "Opponent DvP is unfavorable for LESS (30/100)."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Top 10 LESS",
+            "rank": 10,
+            "player": "Ryan Dunn",
+            "team": "PHX",
+            "opponent": "CHA",
+            "stat": "REB",
+            "side": "LESS",
+            "line": 4.5,
+            "grade": 55,
+            "tier": "WATCH",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 10 median 3 beats the 4.5 line for LESS; 0.8 volatility-adjusted units.",
+              "6/10 resolved recent games cleared LESS (pushes 0); small-sample-adjusted clearance 56.3%.",
+              "Opportunity supports LESS: L5 vs previous L5 per-36 REB -18% (production proxies, not tracked chances)."
+            ],
+            "risks": [
+              "LESS upper-tail warning: 75th percentile 5 sits above 4.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 1,
+            "player": "Khaman Maluach",
+            "team": "PHX",
+            "opponent": "CHA",
+            "stat": "PR",
+            "side": "MORE",
+            "line": 12.5,
+            "grade": 50,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 3,
+            "signals": [
+              "Last 10 median 15.5 beats the 12.5 line for MORE; 0.7 volatility-adjusted units.",
+              "7/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 62.5%.",
+              "Opportunity supports MORE: L5 vs previous L5 per-36 PTS +23.1%, REB +22.1% (production proxies, not tracked chances)."
+            ],
+            "risks": [
+              "Limited recent playing time: 19.6 minutes L5.",
+              "Opponent DvP is unfavorable for MORE (5/100)."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 2,
+            "player": "LaMelo Ball",
+            "team": "MIN",
+            "opponent": "DAL",
+            "stat": "PTS",
+            "side": "MORE",
+            "line": 20.5,
+            "grade": 59,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 1,
+            "signals": [
+              "Opportunity supports MORE: L5 vs previous L5 per-36 FGA +6.1%, FTA +60%.",
+              "Stable recent playing time: 29.8 minutes (L5 CV 17.4%).",
+              "Paint (non-RA): allowed shot share +2.6 pp vs NBA; opponent FG% +3.9 pp vs NBA (243 attempts). Supports MORE."
+            ],
+            "risks": [
+              "Recent median 17.5 opposes MORE 20.5.",
+              "Only 4/10 resolved recent games cleared this side.",
+              "Opponent DvP is unfavorable for MORE (11/100 position estimate).",
+              "MORE lower-tail warning: 25th percentile 11.3 sits below 20.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 3,
+            "player": "AJ Dybantsa",
+            "team": "WAS",
+            "opponent": "DET",
+            "stat": "PTS",
+            "side": "MORE",
+            "line": 16.5,
+            "grade": 47,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 8 median 18 beats the 16.5 line for MORE; 0.3 volatility-adjusted units.",
+              "5/8 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 57.1%.",
+              "Stable recent playing time: 34 minutes (L5 CV 6.7%)."
+            ],
+            "risks": [
+              "Opponent DvP is unfavorable for MORE (11/100 position estimate).",
+              "Back-to-back: possible role, minutes, or efficiency drag.",
+              "MORE lower-tail warning: 25th percentile 12.5 sits below 16.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 4,
+            "player": "Trae Young",
+            "team": "WAS",
+            "opponent": "DET",
+            "stat": "RA",
+            "side": "MORE",
+            "line": 10.5,
+            "grade": 45,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 12 beats the 10.5 line for MORE; 0.5 volatility-adjusted units.",
+              "6/10 resolved recent games cleared MORE (pushes 0); small-sample-adjusted clearance 56.3%.",
+              "Stable recent playing time: 34.2 minutes (L5 CV 10.2%)."
+            ],
+            "risks": [
+              "Opportunity trends oppose MORE: L5 vs previous L5 per-36 REB -39.3%, AST -32.3% (production proxies, not tracked chances).",
+              "Opponent DvP is unfavorable for MORE (11/100 position estimate).",
+              "Back-to-back: possible role, minutes, or efficiency drag.",
+              "MORE lower-tail warning: 25th percentile 8 sits below 10.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 5,
+            "player": "Alex Sarr",
+            "team": "WAS",
+            "opponent": "DET",
+            "stat": "AST",
+            "side": "MORE",
+            "line": 1.5,
+            "grade": 38,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 0,
+            "signals": [
+              "Stable recent playing time: 26.2 minutes (L5 CV 9.5%)."
+            ],
+            "risks": [
+              "Recent median 1 opposes MORE 1.5.",
+              "Only 4/10 resolved recent games cleared this side.",
+              "Opportunity trends oppose MORE: L5 vs previous L5 per-36 AST -59.8% (production proxies, not tracked chances).",
+              "Opponent DvP is unfavorable for MORE (11/100)."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 6,
+            "player": "Jaylen Brown",
+            "team": "PHI",
+            "opponent": "TOR",
+            "stat": "REB",
+            "side": "MORE",
+            "line": 6.5,
+            "grade": 52,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 1,
+            "signals": [
+              "Opportunity supports MORE: L5 vs previous L5 per-36 REB +33.5% (production proxies, not tracked chances).",
+              "Stable recent playing time: 33 minutes (L5 CV 11.3%)."
+            ],
+            "risks": [
+              "Opponent DvP is unfavorable for MORE (14/100 position estimate).",
+              "MORE lower-tail warning: 25th percentile 4.3 sits below 6.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 7,
+            "player": "Rudy Gobert",
+            "team": "MIN",
+            "opponent": "DAL",
+            "stat": "REB",
+            "side": "MORE",
+            "line": 11,
+            "grade": 50,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "HOLD",
+            "coverage": "MODERATE",
+            "signalCount": 2,
+            "signals": [
+              "Last 10 median 12 beats the 11 line for MORE; 0.2 volatility-adjusted units.",
+              "5/8 resolved recent games cleared MORE (pushes 2); small-sample-adjusted clearance 57.1%.",
+              "Stable recent playing time: 30 minutes (L5 CV 8.9%)."
+            ],
+            "risks": [
+              "Opponent DvP is unfavorable for MORE (17/100).",
+              "MORE lower-tail warning: 25th percentile 10.3 sits below 11."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 8,
+            "player": "Naji Marshall",
+            "team": "DAL",
+            "opponent": "MIN",
+            "stat": "3PM",
+            "side": "MORE",
+            "line": 0.5,
+            "grade": 44,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 0,
+            "signals": [],
+            "risks": [
+              "Opportunity trends oppose MORE: L5 vs previous L5 per-36 TPA -11.9%.",
+              "Opponent DvP is unfavorable for MORE (21/100 position estimate).",
+              "MORE lower-tail warning: 25th percentile 0 sits below 0.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 9,
+            "player": "RJ Barrett",
+            "team": "TOR",
+            "opponent": "PHI",
+            "stat": "AST",
+            "side": "MORE",
+            "line": 4,
+            "grade": 46,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 0,
+            "signals": [
+              "Stable recent playing time: 34.8 minutes (L5 CV 6.9%)."
+            ],
+            "risks": [
+              "Opportunity trends oppose MORE: L5 vs previous L5 per-36 AST -16.3% (production proxies, not tracked chances).",
+              "Opponent DvP is unfavorable for MORE (26/100 position estimate).",
+              "Back-to-back: possible role, minutes, or efficiency drag.",
+              "MORE lower-tail warning: 25th percentile 3 sits below 4."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          },
+          {
+            "board": "Bottom 10",
+            "rank": 10,
+            "player": "Kyrie Irving",
+            "team": "DAL",
+            "opponent": "MIN",
+            "stat": "PTS",
+            "side": "MORE",
+            "line": 22.5,
+            "grade": 54,
+            "tier": "COUNTERCHECK",
+            "finalVetoTier": "PASS",
+            "coverage": "MODERATE",
+            "signalCount": 1,
+            "signals": [
+              "Opportunity supports MORE: L5 vs previous L5 per-36 FGA +19.4%, FTA +60%.",
+              "Stable recent playing time: 33.2 minutes (L5 CV 12%)."
+            ],
+            "risks": [
+              "Opponent DvP is unfavorable for MORE (27/100 position estimate).",
+              "MORE lower-tail warning: 25th percentile 15 sits below 22.5."
+            ],
+            "verification": {
+              "lineFresh": true,
+              "projectionMatched": false
+            },
+            "source": null
+          }
+        ],
+        "featured": {
+          "top2": [
+            {
+              "board": "Featured Top 5",
+              "player": "Duncan Robinson",
+              "team": "DET",
+              "opponent": "WAS",
+              "stat": "PR",
+              "side": "MORE",
+              "line": 17.5,
+              "rank": null,
+              "detailKey": "Duncan Robinson|DET|WAS|PR|MORE|17.5",
+              "pregameResearchStatus": "NOT APPROVED · FINAL CHECKS MISSING",
+              "quality": "STRONG RESEARCH"
+            },
+            {
+              "board": "Featured Top 5",
+              "player": "LaMelo Ball",
+              "team": "MIN",
+              "opponent": "DAL",
+              "stat": "AST",
+              "side": "LESS",
+              "line": 6.5,
+              "rank": null,
+              "detailKey": "LaMelo Ball|MIN|DAL|AST|LESS|6.5",
+              "pregameResearchStatus": "NOT APPROVED · FINAL CHECKS MISSING",
+              "quality": "MULTI-SIGNAL RESEARCH"
+            }
+          ],
+          "top5": [
+            {
+              "board": "Featured Top 5",
+              "player": "Duncan Robinson",
+              "team": "DET",
+              "opponent": "WAS",
+              "stat": "PR",
+              "side": "MORE",
+              "line": 17.5,
+              "rank": null,
+              "detailKey": "Duncan Robinson|DET|WAS|PR|MORE|17.5",
+              "pregameResearchStatus": "NOT APPROVED · FINAL CHECKS MISSING",
+              "quality": "STRONG RESEARCH"
+            },
+            {
+              "board": "Featured Top 5",
+              "player": "LaMelo Ball",
+              "team": "MIN",
+              "opponent": "DAL",
+              "stat": "AST",
+              "side": "LESS",
+              "line": 6.5,
+              "rank": null,
+              "detailKey": "LaMelo Ball|MIN|DAL|AST|LESS|6.5",
+              "pregameResearchStatus": "NOT APPROVED · FINAL CHECKS MISSING",
+              "quality": "MULTI-SIGNAL RESEARCH"
+            },
+            {
+              "board": "Featured Top 5",
+              "player": "Miles Bridges",
+              "team": "PHX",
+              "opponent": "CHA",
+              "stat": "RA",
+              "side": "MORE",
+              "line": 9,
+              "rank": null,
+              "detailKey": "Miles Bridges|PHX|CHA|RA|MORE|9",
+              "pregameResearchStatus": "NOT APPROVED · FINAL CHECKS MISSING",
+              "quality": "STRONG RESEARCH"
+            },
+            {
+              "board": "Featured Top 5",
+              "player": "Ausar Thompson",
+              "team": "DET",
+              "opponent": "WAS",
+              "stat": "REB",
+              "side": "MORE",
+              "line": 7,
+              "rank": null,
+              "detailKey": "Ausar Thompson|DET|WAS|REB|MORE|7",
+              "pregameResearchStatus": "NOT APPROVED · FINAL CHECKS MISSING",
+              "quality": "MULTI-SIGNAL RESEARCH"
+            },
+            {
+              "board": "Featured Top 5",
+              "player": "Devin Booker",
+              "team": "PHX",
+              "opponent": "CHA",
+              "stat": "RA",
+              "side": "LESS",
+              "line": 8,
+              "rank": null,
+              "detailKey": "Devin Booker|PHX|CHA|RA|LESS|8",
+              "pregameResearchStatus": "NOT APPROVED · FINAL CHECKS MISSING",
+              "quality": "MULTI-SIGNAL RESEARCH"
+            }
+          ]
+        },
+        "gameCount": 4,
+        "pretipVerified": true,
+        "pretipGames": 4,
+        "totalGames": 4
+      },
+      "audit": null
+    },
     {
       "date": "2026-11-11",
       "status": "not_frozen",
