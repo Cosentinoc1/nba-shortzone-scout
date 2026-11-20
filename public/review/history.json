@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-19T22:39:04.781Z",
+  "updatedAt": "2026-11-20T03:56:59.862Z",
   "days": [
     {
       "date": "2026-11-19",
-      "status": "no_qualified",
+      "status": "not_frozen",
       "scoringVersion": "RFPP 2.7",
-      "message": "No eligible ranked pre-tip picks among 323 observed lines / 646 scored directions; not a 0% result.",
+      "message": "Capture ran after the scheduled games started or finished; no retrospective Top 10 has been invented.",
       "source": {
         "site": "https://nba-shotzone-scout.onrender.com",
         "provider": "ParlayAPI · PrizePicks NBA",
-        "observedAt": "2026-11-19T22:37:56.000Z",
+        "observedAt": "2026-11-20T03:56:34.000Z",
         "providerSidesVerified": false
       },
       "snapshot": null,
@@ -20,14 +20,19 @@
           "at": "2026-11-19T22:38:43.650Z",
           "status": "no_qualified",
           "message": "No eligible ranked pre-tip picks among 323 observed lines / 646 scored directions; not a 0% result."
+        },
+        {
+          "at": "2026-11-20T03:56:44.547Z",
+          "status": "not_frozen",
+          "message": "Capture ran after the scheduled games started or finished; no retrospective Top 10 has been invented."
         }
       ],
-      "captureAttempts": 1,
+      "captureAttempts": 2,
       "observedBoard": {
-        "standardLines": 323,
-        "matchedDirections": 646,
+        "standardLines": 475,
+        "matchedDirections": 0,
         "qualifiedDirections": 0,
-        "pretipGames": 4,
+        "pretipGames": 0,
         "games": 4,
         "feedFresh": true
       }
