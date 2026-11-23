@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-22T21:00:22.816Z",
+  "updatedAt": "2026-11-23T01:34:20.778Z",
   "days": [
     {
       "date": "2026-11-22",
       "status": "not_frozen",
       "scoringVersion": "RFPP 2.7",
-      "message": "Pregame capture failed (The operation was aborted due to timeout). Retry scheduled; no picks or result percentage can be claimed.",
+      "message": "Capture ran after the scheduled games started or finished; no retrospective Top 10 has been invented.",
       "source": {
         "site": "https://nba-shotzone-scout.onrender.com",
-        "provider": "NBA Scout /api/picks",
-        "observedAt": "2026-11-22T20:59:54.469Z",
+        "provider": "ParlayAPI · PrizePicks NBA",
+        "observedAt": "2026-11-23T01:34:07.000Z",
         "providerSidesVerified": false
       },
       "snapshot": null,
@@ -20,10 +20,22 @@
           "at": "2026-11-22T20:59:54.469Z",
           "status": "not_frozen",
           "message": "Pregame capture failed (The operation was aborted due to timeout). Retry scheduled; no picks or result percentage can be claimed."
+        },
+        {
+          "at": "2026-11-23T01:34:02.916Z",
+          "status": "not_frozen",
+          "message": "Capture ran after the scheduled games started or finished; no retrospective Top 10 has been invented."
         }
       ],
-      "captureAttempts": 1,
-      "observedBoard": null
+      "captureAttempts": 2,
+      "observedBoard": {
+        "standardLines": 489,
+        "matchedDirections": 344,
+        "qualifiedDirections": 0,
+        "pretipGames": 0,
+        "games": 7,
+        "feedFresh": true
+      }
     },
     {
       "date": "2026-11-21",
