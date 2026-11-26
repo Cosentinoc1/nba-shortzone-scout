@@ -1,7 +1,37 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-25T23:34:26.908Z",
+  "updatedAt": "2026-11-26T23:44:05.016Z",
   "days": [
+    {
+      "date": "2026-11-26",
+      "status": "not_frozen",
+      "scoringVersion": "RFPP 2.7",
+      "message": "NBA schedule contained no verifiable games. No frozen rankings.",
+      "source": {
+        "site": "https://nba-shotzone-scout.onrender.com",
+        "provider": "ParlayAPI · PrizePicks NBA",
+        "observedAt": "2026-11-26T23:43:43.000Z",
+        "providerSidesVerified": false
+      },
+      "snapshot": null,
+      "audit": null,
+      "captureChecks": [
+        {
+          "at": "2026-11-26T23:43:46.453Z",
+          "status": "not_frozen",
+          "message": "NBA schedule contained no verifiable games. No frozen rankings."
+        }
+      ],
+      "captureAttempts": 1,
+      "observedBoard": {
+        "standardLines": 667,
+        "matchedDirections": 0,
+        "qualifiedDirections": 0,
+        "pretipGames": 0,
+        "games": 0,
+        "feedFresh": true
+      }
+    },
     {
       "date": "2026-11-25",
       "status": "no_qualified",
